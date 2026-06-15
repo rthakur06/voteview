@@ -1,0 +1,217 @@
+{
+  "Likud": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Likud",
+      "position_summary": "Likud supports a free market economic approach with low taxes and emphasizes growth in the technology sector as a driver of national prosperity.",
+      "key_policies": [
+        "Free market economic policies",
+        "Low taxation",
+        "Support for the technology and startup sector"
+      ],
+      "supporting_quote": "we support free market policies low taxes and a thriving technology sector that has made Israel a startup nation"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Likud",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Likud",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Likud",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Likud",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Likud",
+      "position_summary": "Likud prioritizes a strong alliance with the United States and other allies while asserting Israel's independence in foreign policy decision-making. The platform does not specifically address the EU, but emphasizes Israel's freedom of action in international affairs.",
+      "key_policies": [
+        "Strong relationship with the United States and allied nations",
+        "Maintaining Israel's freedom of action in foreign and military policy",
+        "Opposition to external pressure regarding Palestinian statehood or West Bank sovereignty"
+      ],
+      "supporting_quote": "We support a strong relationship with the United States and other allies while maintaining Israel's freedom of action."
+    }
+  },
+  "Beyachad (Together)": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Beyachad (Together)",
+      "position_summary": "Beyachad supports a modern market economy with a focus on technology investment, education, and alleviating cost-of-living pressures for middle-class Israelis.",
+      "key_policies": [
+        "Support for a modern market economy",
+        "Investment in technology and education",
+        "Reducing the cost of living for middle-class Israelis"
+      ],
+      "supporting_quote": "we support a modern market economy with investment in technology education and reducing the cost of living for middle class Israelis"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Beyachad (Together)",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Beyachad (Together)",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Beyachad (Together)",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Beyachad (Together)",
+      "position_summary": "Beyachad supports investment in technology education as part of a broader modern market economy agenda, with limited specific detail on broader education policy.",
+      "key_policies": [
+        "Investment in technology education"
+      ],
+      "supporting_quote": "investment in technology education and reducing the cost of living for middle class Israelis"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Beyachad (Together)",
+      "position_summary": "Beyachad seeks to restore Israel's international standing and alliances, pursuing diplomatic normalization with Arab states while supporting a conditional two-state solution and repairing relationships damaged under current leadership.",
+      "key_policies": [
+        "Pursue diplomatic normalization of relations with Arab states",
+        "Support a two-state solution in principle, contingent on security conditions being met",
+        "Restore Israel's international reputation and alliances"
+      ],
+      "supporting_quote": "We will restore Israel's international reputation and alliances damaged by years of Netanyahu governance."
+    }
+  },
+  "The Democrats": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "The Democrats",
+      "position_summary": "The Democrats support a social democratic economic model emphasizing robust public services, universal healthcare, and measures to address extreme inequality.",
+      "key_policies": [
+        "Social democratic economic model",
+        "Strong public services",
+        "Universal healthcare",
+        "Reducing extreme inequality"
+      ],
+      "supporting_quote": "we support a social democratic model with strong public services universal healthcare and reducing extreme inequality"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "The Democrats",
+      "position_summary": "The Democrats support a social democratic approach to healthcare, advocating for universal healthcare as part of a broader public services model.",
+      "key_policies": [
+        "Universal healthcare coverage",
+        "Strong public services framework",
+        "Social democratic economic model to fund healthcare"
+      ],
+      "supporting_quote": "we support a social democratic model with strong public services universal healthcare and reducing extreme inequality"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "The Democrats",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "The Democrats",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "The Democrats",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "The Democrats",
+      "position_summary": "The Democrats support a two-state solution for Israel-Palestine, international law, and multilateral cooperation, emphasizing that Israel's security is best achieved through peace and normalization with Arab neighbours rather than military dominance alone.",
+      "key_policies": [
+        "Support for a two-state solution and ending the occupation of the West Bank and Gaza",
+        "Commitment to international law and multilateral cooperation",
+        "Belief that Israel's security is best served through peace and normalization with Arab neighbours"
+      ],
+      "supporting_quote": "Israel's security is best served by peace and normalisation with Arab neighbours rather than military dominance alone."
+    }
+  },
+  "Shas": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Shas",
+      "position_summary": "Shas supports state-funded welfare and religious institutions, prioritizing financial support for large families, low-income communities, and yeshiva students, though the platform does not detail broader taxation or fiscal policy positions.",
+      "key_policies": [
+        "Generous state funding for yeshiva students and rabbinical institutions",
+        "Welfare programmes for large families",
+        "Financial support for low-income communities"
+      ],
+      "supporting_quote": "We support welfare programmes for large families and low-income communities."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Shas",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Shas",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Shas",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Shas",
+      "position_summary": "Shas supports state funding for religious educational institutions and the inclusion of Sephardi Jewish cultural heritage in school curricula, prioritizing religious study as a legitimate alternative to military service.",
+      "key_policies": [
+        "Generous state funding for yeshiva students and rabbinical institutions",
+        "Teaching Sephardi Jewish cultural heritage in schools",
+        "Exemption of Haredi men from military service to enable continued religious study"
+      ],
+      "supporting_quote": "We will protect Sephardi Jewish cultural heritage and ensure it is taught in schools."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Shas",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    }
+  }
+}

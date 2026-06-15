@@ -15,37 +15,37 @@ const COUNTRIES = {
     flag: "🇧🇷",
     years: ["2026"],
     electionDate: "October 2026",
-    parties: [],
+    parties: ["PT - Partido dos Trabalhadores", "PL - Partido Liberal", "PSD - Partido Social Democrático"],
     description: "Brazil's general election — Lula vs. the Bolsonarista right in the world's fourth-largest democracy.",
     geopolitics: "Brazil's election will determine whether President Luiz Inácio Lula da Silva secures a second term or the Bolsonarista right reclaims power in Latin America's largest country. At stake is Brazil's climate policy (the Amazon, deforestation, COP commitments), its relationship with China and the US, and the health of its democracy after the January 2023 Capitol-style riots. With over 150 million voters, it is one of the biggest democratic exercises of 2026 and will shape the future of the world's largest rainforest.",
-    status: "coming_soon"
+    status: "available"
   },
   "Israel": {
     flag: "🇮🇱",
     years: ["2026"],
     electionDate: "By October 2026",
-    parties: [],
+    parties: ["Likud", "Beyachad (Together)", "The Democrats", "Shas"],
     description: "Israel's Knesset election amid ongoing conflict, a polarised public and Netanyahu's political future.",
     geopolitics: "Israel's election takes place against the backdrop of ongoing regional conflict, a deeply polarised electorate, and serious questions about the future direction of Israeli democracy and its relationship with allies. Prime Minister Benjamin Netanyahu and his right-wing coalition face pressure from both the left and the far right. The result will shape Israel's approach to ceasefire negotiations, relations with the US under Trump, and the long-term question of a Palestinian state. One of the most closely watched elections in the Middle East in years.",
-    status: "coming_soon"
+    status: "available"
   },
   "United States": {
     flag: "🇺🇸",
     years: ["2026"],
-    parties: [],
+    parties: ["Republican Party", "Democratic Party"],
     electionDate: "3 November 2026",
     description: "US midterm elections — control of Congress and the future of Trump's second-term agenda.",
     geopolitics: "The 2026 US midterms will determine whether Republicans maintain control of both chambers of Congress, giving Trump a free legislative hand through 2028, or whether Democrats can retake the House or Senate to act as a check on executive power. Every seat in the House and a third of the Senate are up for election. The result will shape US foreign policy on Ukraine and NATO, domestic policy on healthcare, immigration and trade tariffs, and the trajectory of American democracy heading into the 2028 presidential race.",
-    status: "coming_soon"
+    status: "available"
   },
   "Nigeria": {
     flag: "🇳🇬",
     years: ["2027"],
-    parties: [],
+    parties: ["APC - All Progressives Congress", "PDP - Peoples Democratic Party", "LP - Labour Party", "ADC - African Democratic Congress"],
     electionDate: "16 January 2027",
     description: "Nigeria's general election — Africa's most populous democracy chooses its next president and parliament.",
     geopolitics: "Nigeria is Africa's largest economy and most populous country, with over 220 million people. The 2027 election will test whether President Bola Tinubu can win re-election after painful economic reforms — including the removal of fuel subsidies — that have squeezed ordinary Nigerians hard. The vote will shape Nigeria's role in African security, its relationship with Western powers and China, and the stability of West Africa's democratic anchor at a time when military coups are spreading across the Sahel.",
-    status: "coming_soon"
+    status: "available"
   },
   "France": {
     flag: "🇫🇷",
@@ -68,6 +68,7 @@ const ISSUES = [
 ];
 
 const PARTIES = {
+  // Sweden
   "Socialdemokraterna": {
     color: "#E8112d", short: "S", spectrum: 25,
     leader: "Magdalena Andersson",
@@ -124,6 +125,8 @@ const PARTIES = {
     leaderBio: "Deputy PM in the Kristersson government. A combative debater known for her media presence, Busch champions family values, Christian democratic principles, and nuclear energy.",
     partyBio: "A Christian democratic party rooted in family and community values. Supports nuclear power, tougher crime policy, and prioritising care for the elderly."
   },
+
+  // France
   "Rassemblement National": {
     color: "#003189", 
     short: "RN", 
@@ -169,7 +172,106 @@ const PARTIES = {
     leaderTitle: "National Secretary",
     leaderBio: "Took over EELV leadership in 2023, bringing a more grassroots and combative style to the Greens. Has focused on rebuilding the party's identity after years of fragmentation on the French left.",
     partyBio: "France's green party. Puts climate and ecology at the centre of all policy, supports phasing out nuclear power, open immigration, reduced working hours, and strong EU climate action."
-  }
+  },
+
+  // BRAZIL
+  "PT - Partido dos Trabalhadores": {
+    color: "#CC0000", short: "PT", spectrum: 20,
+    leader: "Luiz Inácio Lula da Silva",
+    leaderTitle: "President & PT candidate",
+    leaderBio: "Known globally as 'Lula', he is one of the most consequential politicians in Latin American history. Served as President 2003–2010 and returned in 2023. At 80, he is seeking an unprecedented fourth term despite health concerns and a tightening race.",
+    partyBio: "Brazil's main left-wing party. Founded by trade unionists and social movements. Focuses on poverty reduction, social programmes like Bolsa Família, workers' rights, and protecting the Amazon."
+  },
+  "PL - Partido Liberal": {
+    color: "#002776", short: "PL", spectrum: 85,
+    leader: "Flávio Bolsonaro",
+    leaderTitle: "Presidential candidate & Senator",
+    leaderBio: "Son of former President Jair Bolsonaro, who is barred from running after being imprisoned for plotting a coup. Flávio is carrying the Bolsonarista movement's flag in 2026, and has closed a 12-point gap on Lula to reach a statistical dead heat.",
+    partyBio: "Brazil's main right-wing party, now home to the Bolsonarista movement. Supports conservative social values, free market economics, gun rights, and is deeply sceptical of environmental regulations."
+  },
+  "PSD - Partido Social Democrático": {
+    color: "#00923F", short: "PSD", spectrum: 55,
+    leader: "Ronaldo Caiado",
+    leaderTitle: "Presidential candidate & former Governor",
+    leaderBio: "Former Governor of Goiás, Caiado is a centre-right candidate who recently joined PSD after leaving União Brasil. A physician and ruralist politician who has emerged as a third-way alternative to Lula and Bolsonaro.",
+    partyBio: "A large centrist-right party led by power broker Gilberto Kassab. Pragmatic and flexible in its ideology, it draws support from business communities and regional politicians across Brazil."
+  },
+  "ADC - African Democratic Congress": {
+    color: "#FF6600", short: "ADC", spectrum: 35,
+    leader: "Peter Obi",
+    leaderTitle: "Presidential candidate",
+    leaderBio: "A former Governor of Anambra State who electrified Nigerian politics in 2023 by winning millions of young urban voters as the Labour Party candidate. Now contesting 2027 under the ADC banner in an opposition coalition with Atiku Abubakar and Nasir El-Rufai.",
+    partyBio: "The vehicle for a broad opposition coalition aiming to unseat Tinubu in 2027. Brings together former PDP leaders, Labour Party veterans and reform-minded politicians under one platform."
+  },
+
+  // UNITED STATES
+  "Republican Party": {
+    color: "#CC0000", short: "GOP", spectrum: 75,
+    leader: "Donald Trump",
+    leaderTitle: "President & de facto party leader",
+    leaderBio: "47th President of the United States, serving his second term after returning to office in January 2025. Remains the dominant force in Republican politics, reshaping the party in his image through tariffs, immigration crackdowns and confrontation with democratic institutions.",
+    partyBio: "The GOP currently controls the White House, Senate and House. Its 2026 campaign will centre on Trump's record — tax cuts, border security, deregulation — while defending razor-thin congressional majorities."
+  },
+  "Democratic Party": {
+    color: "#003399", short: "DEM", spectrum: 30,
+    leader: "Hakeem Jeffries",
+    leaderTitle: "House Minority Leader",
+    leaderBio: "Leader of House Democrats since 2023, Jeffries is the face of the Democratic opposition heading into 2026. A Brooklyn-born lawyer known for his sharp communication style, he is attempting to win back the House majority in what polls show is a competitive environment for Democrats.",
+    partyBio: "Democrats are on offense in 2026, needing just three seats to retake the House. Campaigning on opposition to Trump's tariffs, Medicaid cuts and immigration policies, with a 5-7 point lead on the generic ballot."
+  },
+
+  // NIGERIA
+  "APC - All Progressives Congress": {
+    color: "#006600", short: "APC", spectrum: 60,
+    leader: "Bola Tinubu",
+    leaderTitle: "President & APC candidate",
+    leaderBio: "President since 2023, Tinubu is seeking a second term after implementing painful but widely discussed economic reforms including removing Nigeria's costly fuel subsidy. A powerful political operator from Lagos, he built the coalition that brought the APC to power. His second term bid faces a united opposition.",
+    partyBio: "Nigeria's ruling party since 2015. A big-tent party that combines elements of the centre-right and nationalist traditions. Currently defending its record on economic reform, security and infrastructure."
+  },
+  "PDP - Peoples Democratic Party": {
+    color: "#CC0000", short: "PDP", spectrum: 40,
+    leader: "Atiku Abubakar",
+    leaderTitle: "Former Vice President & presidential candidate",
+    leaderBio: "A veteran of Nigerian politics, Atiku has run for president multiple times and is now aligned with Peter Obi's ADC opposition coalition to defeat Tinubu. Former VP under President Obasanjo, he is one of Nigeria's most prominent political figures.",
+    partyBio: "Nigeria's main opposition party and former ruling party (1999–2015). Historically dominant across much of the country but weakened by defections to the APC. Now part of a broad coalition challenging Tinubu."
+  },
+  "LP - Labour Party": {
+    color: "#FF0000", short: "LP", spectrum: 25,
+    leader: "Peter Obi",
+    leaderTitle: "Former presidential candidate, now ADC",
+    leaderBio: "The surprise of Nigeria's 2023 election, Obi mobilised millions of young urban voters under the 'Obidient' movement. He has since left the Labour Party to contest 2027 under the ADC coalition banner with Atiku and El-Rufai.",
+    partyBio: "The party that channelled Nigeria's youth protest energy in 2023. Now weakened by Obi's departure but still represents a reform-minded, anti-establishment tradition in Nigerian politics."
+  },
+
+  // ISRAEL
+  "Likud": {
+    color: "#003399", short: "LKD", spectrum: 75,
+    leader: "Benjamin Netanyahu",
+    leaderTitle: "Prime Minister & Likud leader",
+    leaderBio: "Israel's longest-serving Prime Minister, Netanyahu has dominated Israeli politics for over two decades. Currently on trial for corruption charges while leading the country through its most intense military conflict since 1948. Polls show Likud at around 25 seats — still the largest single party but facing a credible challenge.",
+    partyBio: "Israel's dominant right-wing party, rooted in Revisionist Zionism. Supports a strong security posture, Jewish settlement expansion, free market economics, and has been deeply sceptical of a two-state solution."
+  },
+  "Beyachad (Together)": {
+    color: "#0099CC", short: "BY", spectrum: 52,
+    leader: "Naftali Bennett & Yair Lapid",
+    leaderTitle: "Co-leaders",
+    leaderBio: "Former PM Naftali Bennett (right-wing national) and former PM Yair Lapid (centrist) announced a dramatic merger in April 2026 to unite the fragmented opposition. Their combined party is polling at ~26 seats — level with Likud — making this the most credible challenge to Netanyahu in years.",
+    partyBio: "A new centrist-to-right alliance formed specifically to defeat Netanyahu. Combines Bennett's national-security focus with Lapid's centrist economic and civil liberties agenda. Aims to form a government without ultra-Orthodox or Arab party support."
+  },
+  "The Democrats": {
+    color: "#CC3300", short: "DEM", spectrum: 25,
+    leader: "Yair Golan",
+    leaderTitle: "Party leader",
+    leaderBio: "Former IDF Deputy Chief of Staff turned left-wing politician. Led the Democrats — a merger of Labour and Meretz — into the 2026 election as Israel's main left-wing voice, polling at around 11 seats.",
+    partyBio: "Israel's left-wing alliance formed from the merger of the historic Labour Party and Meretz. Supports a two-state solution, civil rights, reducing ultra-Orthodox political influence, and social democratic economics."
+  },
+  "Shas": {
+    color: "#8B4513", short: "SHS", spectrum: 82,
+    leader: "Aryeh Deri",
+    leaderTitle: "Party leader",
+    leaderBio: "A veteran ultra-Orthodox Sephardi politician and key Netanyahu coalition partner. Has faced legal challenges but remains one of the most influential figures in Israeli coalition politics, controlling a bloc of ~10 seats.",
+    partyBio: "An ultra-Orthodox Sephardi party and anchor of Netanyahu's coalition. Prioritises religious law in public life, yeshiva funding, exemptions from military service for Orthodox men, and Sephardi Jewish interests."
+  },
 };
 
 const QUIZ_QUESTIONS = [
@@ -230,6 +332,7 @@ const QUIZ_QUESTIONS = [
 ];
 
 const PARTY_MATCH_RULES = {
+  // Sweden
   "Vansterpartiet":     { economy: "left",   immigration: "open",        climate: "green",     welfare: "public",  authority: "liberal",       international: "globalist" },
   "Socialdemokraterna": { economy: "left",   immigration: "moderate",    climate: "balanced",  welfare: "mixed",   authority: "moderate",      international: "globalist" },
   "Miljopartiet":       { economy: "centre", immigration: "open",        climate: "green",     welfare: "mixed",   authority: "liberal",       international: "globalist" },
@@ -238,12 +341,33 @@ const PARTY_MATCH_RULES = {
   "Moderaterna":        { economy: "right",  immigration: "moderate",    climate: "balanced",  welfare: "private", authority: "moderate",      international: "moderate" },
   "Kristdemokraterna":  { economy: "right",  immigration: "moderate",    climate: "balanced",  welfare: "private", authority: "authoritarian", international: "moderate" },
   "Sverigedemokraterna":{ economy: "centre", immigration: "restrictive", climate: "cautious",  welfare: "mixed",   authority: "authoritarian", international: "nationalist" },
+  // France
   "Rassemblement National":   { economy: "centre", immigration: "restrictive", climate: "cautious",  welfare: "mixed",   authority: "authoritarian", international: "nationalist" },
   "La France Insoumise":      { economy: "left",   immigration: "open",        climate: "green",     welfare: "public",  authority: "liberal",       international: "nationalist" },
   "Parti Socialiste":         { economy: "left",   immigration: "moderate",    climate: "balanced",  welfare: "mixed",   authority: "moderate",      international: "globalist"  },
   "Renaissance":              { economy: "centre", immigration: "moderate",    climate: "balanced",  welfare: "mixed",   authority: "moderate",      international: "globalist"  },
   "Les Républicains":         { economy: "right",  immigration: "restrictive", climate: "balanced",  welfare: "private", authority: "authoritarian", international: "moderate"   },
   "Europe Écologie Les Verts":{ economy: "centre", immigration: "open",        climate: "green",     welfare: "mixed",   authority: "liberal",       international: "globalist"  },
+  // BRAZIL
+  "PT - Partido dos Trabalhadores":  { economy: "left",   immigration: "open",     climate: "green",    welfare: "public",  authority: "liberal",       international: "moderate"   },
+  "PL - Partido Liberal":            { economy: "right",  immigration: "moderate", climate: "cautious", welfare: "private", authority: "authoritarian", international: "nationalist" },
+  "PSD - Partido Social Democrático":{ economy: "centre", immigration: "moderate", climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "moderate"   },
+
+  // UNITED STATES
+  "Republican Party":                { economy: "right",  immigration: "restrictive", climate: "cautious", welfare: "private", authority: "authoritarian", international: "nationalist" },
+  "Democratic Party":                { economy: "left",   immigration: "open",        climate: "green",    welfare: "mixed",   authority: "liberal",       international: "globalist"  },
+
+  // NIGERIA
+  "APC - All Progressives Congress": { economy: "centre", immigration: "moderate", climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "moderate"   },
+  "PDP - Peoples Democratic Party":  { economy: "centre", immigration: "moderate", climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist"  },
+  "LP - Labour Party":               { economy: "left",   immigration: "open",     climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist"  },
+  "ADC - African Democratic Congress":{ economy: "centre",immigration: "moderate", climate: "balanced", welfare: "mixed",   authority: "liberal",       international: "globalist"  },
+
+  // ISRAEL
+  "Likud":                           { economy: "right",  immigration: "restrictive", climate: "cautious",  welfare: "mixed",   authority: "authoritarian", international: "nationalist" },
+  "Beyachad (Together)":             { economy: "centre", immigration: "moderate",    climate: "balanced",  welfare: "mixed",   authority: "moderate",      international: "moderate"   },
+  "The Democrats":                   { economy: "left",   immigration: "open",        climate: "green",     welfare: "public",  authority: "liberal",       international: "globalist"  },
+  "Shas":                            { economy: "centre", immigration: "restrictive", climate: "cautious",  welfare: "mixed",   authority: "authoritarian", international: "nationalist" },
 };
 
 function computeMatch(answers, countryParties) {
@@ -844,6 +968,10 @@ export default function Home() {
     const fileMap = {
       "Sweden": "/extracted_positions.json",
       "France": "/extracted_positions_france.json",
+      "Brazil": "/extracted_positions_brazil.json",
+      "USA": "/extracted_positions_usa.json",
+      "Nigeria": "/extracted_positions_nigeria.json",
+      "Israel": "/extracted_positions_israel.json",
     };
     const file = fileMap[country] || "/extracted_positions.json";
 

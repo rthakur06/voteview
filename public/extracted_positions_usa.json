@@ -1,0 +1,139 @@
+{
+  "Republican Party": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party supports lower taxes for individuals and businesses as a driver of economic growth and job creation, and favors tariffs on imports to protect domestic manufacturing and reduce trade deficits.",
+      "key_policies": [
+        "Significantly lower taxes for individuals and businesses",
+        "Sweeping tariffs on imports to protect American manufacturing",
+        "Reducing trade deficits with China and other competitors"
+      ],
+      "supporting_quote": "Republicans support significantly lower taxes for individuals and businesses to stimulate economic growth and job creation."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party favors a market-driven healthcare system with reduced government regulation, and opposes key provisions of the Affordable Care Act.",
+      "key_policies": [
+        "Market-driven healthcare approach",
+        "Less government regulation in healthcare",
+        "Opposition to Affordable Care Act mandates"
+      ],
+      "supporting_quote": "healthcare should be market-driven with less government regulation and we oppose the Affordable Care Act mandates"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party prioritizes expanding domestic fossil fuel production and has withdrawn from international climate agreements, favoring energy independence over multilateral climate commitments.",
+      "key_policies": [
+        "Expanding domestic oil, gas, and coal production",
+        "Withdrawal from the Paris Climate Agreement",
+        "Prioritizing energy policy through an economic and national interest lens"
+      ],
+      "supporting_quote": "on energy we support expanding domestic oil gas and coal production and have withdrawn from the Paris Climate Agreement"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party supports strict immigration enforcement measures, describing their approach as the most stringent in modern American history, with a focus on border security and limiting pathways to citizenship.",
+      "key_policies": [
+        "Mass deportations of undocumented immigrants",
+        "Construction of a border wall",
+        "Ending birthright citizenship"
+      ],
+      "supporting_quote": "the strictest immigration enforcement in modern American history including mass deportations border wall construction and ending birthright citizenship"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party supports expanding school choice and empowering parents with greater control over their children's education, including the use of public funds for private and religious schools.",
+      "key_policies": [
+        "Support for school choice programs",
+        "Vouchers for private and religious schools",
+        "Parental rights in education"
+      ],
+      "supporting_quote": "We support school choice and parental rights in education including vouchers for private and religious schools."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Republican Party",
+      "position_summary": "The Republican Party advocates for an America-first foreign policy that prioritizes national interests, expresses skepticism toward international institutions, and favors reduced foreign aid commitments.",
+      "key_policies": [
+        "America-first foreign policy orientation",
+        "Skepticism of international institutions",
+        "Reduction or opposition to foreign aid"
+      ],
+      "supporting_quote": "strong military spending and an America-first foreign policy that is sceptical of international institutions and foreign aid"
+    }
+  },
+  "Democratic Party": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party supports raising taxes on wealthy individuals and large corporations to fund public investment, while opposing tariffs they argue harm consumers and raise prices.",
+      "key_policies": [
+        "Raising taxes on the wealthy and large corporations",
+        "Public investment in infrastructure, healthcare, and education",
+        "Opposition to tariffs on imported goods"
+      ],
+      "supporting_quote": "Democrats support raising taxes on the wealthy and large corporations to fund public investment in infrastructure healthcare and education."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party views healthcare as a fundamental right and supports expanding access to coverage, preserving existing legislation, and reducing prescription drug costs.",
+      "key_policies": [
+        "Expanding access to healthcare",
+        "Protecting the Affordable Care Act",
+        "Lowering prescription drug prices"
+      ],
+      "supporting_quote": "We believe healthcare is a right and support expanding access protecting the Affordable Care Act and lowering prescription drug prices."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party supports transitioning to a green economy through significant public investment in renewable energy and clean technology, viewing this shift as an opportunity for job creation.",
+      "key_policies": [
+        "Major investment in renewable energy",
+        "Support for electric vehicles",
+        "Investment in clean technology and future jobs"
+      ],
+      "supporting_quote": "we support the green transition with major investment in renewable energy electric vehicles clean technology and the jobs of the future"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party supports a humane immigration system that provides a path to citizenship for undocumented immigrants and ensures fair treatment of asylum seekers at the border.",
+      "key_policies": [
+        "Path to citizenship for undocumented immigrants who have lived and worked in America",
+        "Fair treatment of asylum seekers at the border",
+        "A humane immigration system overall"
+      ],
+      "supporting_quote": "a humane immigration system with a path to citizenship for undocumented immigrants who have lived and worked in America and fair treatment of asylum seekers at the border"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party supports robust funding for public schools and opposes the use of taxpayer money for private school vouchers, viewing public education as a key area for government investment.",
+      "key_policies": [
+        "Strong public school funding",
+        "Opposition to private school voucher programs",
+        "Raising taxes on wealthy and corporations to fund public investment in education"
+      ],
+      "supporting_quote": "We support strong public school funding and oppose diverting taxpayer money to private schools through vouchers."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Democratic Party",
+      "position_summary": "The Democratic Party supports maintaining strong alliances with NATO and the EU, emphasizing international cooperation, and opposes tariffs that they argue damage relationships with allied nations.",
+      "key_policies": [
+        "Strong alliances with NATO partner nations",
+        "Partnership and cooperation with the European Union",
+        "International cooperation on global challenges",
+        "Opposition to tariffs seen as harmful to allied relationships"
+      ],
+      "supporting_quote": "We believe in strong alliances with NATO partners the EU and international cooperation on global challenges."
+    }
+  }
+}

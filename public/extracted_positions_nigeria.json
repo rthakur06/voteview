@@ -1,0 +1,231 @@
+{
+  "APC - All Progressives Congress": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "APC supports market-oriented economic reforms aimed at fiscal sustainability and growth, including removal of fuel subsidies and exchange rate unification, alongside infrastructure investment and economic diversification away from oil.",
+      "key_policies": [
+        "Removal of the fuel subsidy to reduce state expenditure",
+        "Unification of the exchange rate to attract foreign investment",
+        "Investment in infrastructure including railways and power generation",
+        "Diversification of Nigeria's economy beyond oil through foreign investment and international trade"
+      ],
+      "supporting_quote": "removing the costly fuel subsidy that was bankrupting the state and unifying the exchange rate to attract foreign investment"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "APC supports expanding access to primary healthcare by establishing centres across all local government areas in Nigeria.",
+      "key_policies": [
+        "Expansion of primary healthcare centres across all local government areas"
+      ],
+      "supporting_quote": "we are expanding primary healthcare centres across all local government areas"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "APC supports education reform with a focus on technical and vocational training as a means to address youth unemployment.",
+      "key_policies": [
+        "Education reform",
+        "Expanding technical and vocational training",
+        "Reducing youth unemployment through skills-based education"
+      ],
+      "supporting_quote": "expanding technical and vocational training to reduce youth unemployment"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "APC - All Progressives Congress",
+      "position_summary": "APC supports attracting foreign investment and expanding international trade as tools to diversify Nigeria's economy, though no specific EU or bilateral foreign policy positions are outlined.",
+      "key_policies": [
+        "Support for foreign investment to grow the Nigerian economy",
+        "Promotion of international trade to reduce oil dependency",
+        "Exchange rate unification to create a more attractive environment for foreign investors"
+      ],
+      "supporting_quote": "We support foreign investment and international trade to diversify Nigeria's economy beyond oil dependency."
+    }
+  },
+  "PDP - Peoples Democratic Party": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "The PDP opposes the current administration's economic reforms, which they argue have caused high inflation and a cost of living crisis, and pledges to restore economic stability while reducing oil dependency.",
+      "key_policies": [
+        "Reverse economic reforms deemed harmful to ordinary Nigerians",
+        "Diversify the economy away from oil dependency through agriculture, manufacturing, and technology",
+        "Restore economic stability and address the cost of living crisis"
+      ],
+      "supporting_quote": "We will reverse policies that have harmed ordinary Nigerians and restore economic stability."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "The PDP supports expanding healthcare access to all Nigerians and strengthening public health infrastructure through increased investment.",
+      "key_policies": [
+        "Universal healthcare coverage",
+        "Investment in public hospitals"
+      ],
+      "supporting_quote": "We support universal healthcare coverage and investment in public hospitals."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "The PDP supports increased government funding for public educational institutions and aims to eliminate recurring academic strikes that disrupt students' learning.",
+      "key_policies": [
+        "Increase funding for public schools",
+        "Increase funding for universities",
+        "End the cycle of strikes that disrupts student education"
+      ],
+      "supporting_quote": "we will increase funding for public schools and universities and end the cycle of strikes that disrupts student education"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "PDP - Peoples Democratic Party",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    }
+  },
+  "LP - Labour Party": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "LP - Labour Party",
+      "position_summary": "The Labour Party emphasizes anti-corruption efforts and redirecting recovered funds toward public services, while advocating for a living wage and stronger worker protections as pillars of economic reform.",
+      "key_policies": [
+        "Aggressive anti-corruption measures with recovered funds redirected to education, healthcare, and infrastructure",
+        "A living wage for all Nigerian workers",
+        "Stronger protections for workers' rights"
+      ],
+      "supporting_quote": "we will fight corruption aggressively and redirect recovered funds into education healthcare and infrastructure"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "LP - Labour Party",
+      "position_summary": "The Labour Party does not outline specific healthcare policies, but indicates that funds recovered from fighting corruption would be redirected into healthcare among other priority areas.",
+      "key_policies": [
+        "Redirect anti-corruption recovered funds into healthcare"
+      ],
+      "supporting_quote": "fight corruption aggressively and redirect recovered funds into education healthcare and infrastructure"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "LP - Labour Party",
+      "position_summary": "The Labour Party supports stronger environmental protection, with a particular focus on communities in the Niger Delta that have been harmed by oil pollution.",
+      "key_policies": [
+        "Stronger environmental protection legislation",
+        "Addressing oil pollution in Niger Delta communities",
+        "Prioritizing environmental justice for affected communities"
+      ],
+      "supporting_quote": "We support stronger environmental protection especially in the Niger Delta communities devastated by oil pollution."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "LP - Labour Party",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "LP - Labour Party",
+      "position_summary": "The Labour Party supports universal access to quality public education in Nigeria, funded and provided by the state. They also propose redirecting funds recovered from anti-corruption efforts into education.",
+      "key_policies": [
+        "Universal quality public education for every Nigerian child",
+        "State funding of public education",
+        "Redirecting recovered corruption funds into education"
+      ],
+      "supporting_quote": "every Nigerian child deserves quality public education funded by the state"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "LP - Labour Party",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    }
+  },
+  "ADC - African Democratic Congress": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "The ADC prioritizes addressing inflation and reducing the cost of living through targeted investment in key economic sectors. They also support restructuring Nigeria's fiscal system to achieve greater fairness and efficiency through fiscal federalism.",
+      "key_policies": [
+        "Tackle inflation and reduce the cost of living",
+        "Create jobs through investment in agriculture, manufacturing, and the digital economy",
+        "Restructure Nigeria's federal system with greater fiscal federalism"
+      ],
+      "supporting_quote": "On the economy we will tackle inflation reduce the cost of living and create jobs through investment in agriculture manufacturing and the digital economy."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "The ADC supports expanded access to healthcare for Nigerians, though the platform text provides limited specific detail on healthcare policy.",
+      "key_policies": [
+        "Expanded access to healthcare services"
+      ],
+      "supporting_quote": "expanded access to healthcare"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "The ADC supports providing free, quality education to all Nigerian children as a core commitment of their platform.",
+      "key_policies": [
+        "Free education for all Nigerian children",
+        "Quality standards in education"
+      ],
+      "supporting_quote": "We support free quality education for all Nigerian children"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "ADC - African Democratic Congress",
+      "position_summary": "The ADC prioritises an Africa-centred foreign policy, emphasising continental unity and cooperation through established regional institutions rather than outlining specific positions on EU relations.",
+      "key_policies": [
+        "Prioritising African unity and cooperation in foreign policy",
+        "Engagement through the African Union (AU)",
+        "Engagement through the Economic Community of West African States (ECOWAS)"
+      ],
+      "supporting_quote": "We believe in a foreign policy that prioritises African unity and cooperation through the African Union and ECOWAS."
+    }
+  }
+}

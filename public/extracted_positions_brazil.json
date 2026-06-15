@@ -1,0 +1,168 @@
+{
+  "PT - Partido dos Trabalhadores": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "PT advocates for a strong state role in the economy, prioritizing social investment, redistribution of wealth, and workers' rights. They emphasize reducing inequality and expanding public funding for welfare, healthcare, and education.",
+      "key_policies": [
+        "Expansion of Bolsa Família and welfare programmes for low-income populations",
+        "Higher minimum wage and strengthened workers' rights and union power",
+        "Publicly funded healthcare and education with universal access"
+      ],
+      "supporting_quote": "The Workers' Party believes in a strong state role in the economy with investment in social programmes."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "PT supports a publicly funded, universally accessible healthcare system, reflecting a strong state role in providing social services to all citizens.",
+      "key_policies": [
+        "Public funding for healthcare",
+        "Universal access to healthcare services",
+        "State-led provision of health services as a social right"
+      ],
+      "supporting_quote": "Healthcare and education must be publicly funded and universally accessible."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "PT supports environmental protection with a focus on preserving the Amazon and combating deforestation, while balancing these goals with sustainable economic development.",
+      "key_policies": [
+        "Protection of the Amazon rainforest",
+        "Reduction of deforestation",
+        "Support for sustainable development"
+      ],
+      "supporting_quote": "committed to protecting the Amazon and reducing deforestation while supporting sustainable development"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "PT supports education as a publicly funded and universally accessible service, reflecting a belief in strong state provision of social goods.",
+      "key_policies": [
+        "Public funding of education",
+        "Universal access to education",
+        "State responsibility for educational provision"
+      ],
+      "supporting_quote": "Healthcare and education must be publicly funded and universally accessible."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "PT - Partido dos Trabalhadores",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    }
+  },
+  "PL - Partido Liberal": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "PL - Partido Liberal",
+      "position_summary": "The Liberal Party advocates for free market economics, lower taxes, and reduced government intervention in the economy, with a focus on deregulation to stimulate business and agricultural growth.",
+      "key_policies": [
+        "Lower taxes for individuals and businesses",
+        "Reduced state intervention in the economy",
+        "Cutting red tape and bureaucratic regulations for businesses and farmers"
+      ],
+      "supporting_quote": "We want to reduce red tape on businesses and farmers to grow the economy."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "PL - Partido Liberal",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "PL - Partido Liberal",
+      "position_summary": "The Liberal Party supports environmentally-focused economic activity through the sustainable use of natural resources, while seeking to reduce regulatory burdens on businesses and farmers. Their approach prioritizes economic development and national sovereignty over international environmental oversight.",
+      "key_policies": [
+        "Support for sustainable use of natural resources, including agriculture and mining",
+        "Reduction of red tape and regulations on businesses and farmers",
+        "Skepticism toward international bodies that may impose environmental constraints on Brazilian sovereignty"
+      ],
+      "supporting_quote": "On environment we support sustainable use of natural resources including agriculture and mining."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "PL - Partido Liberal",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "PL - Partido Liberal",
+      "position_summary": "The Liberal Party opposes what it describes as 'radical gender ideology' in schools, reflecting a socially conservative approach to educational content and curriculum values.",
+      "key_policies": [
+        "Opposition to gender ideology in school curricula"
+      ],
+      "supporting_quote": "oppose radical gender ideology in schools"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "PL - Partido Liberal",
+      "position_summary": "The Liberal Party takes a sovereigntist stance on foreign policy, expressing skepticism toward international bodies that they believe interfere with Brazilian sovereignty. No specific position on the EU is mentioned.",
+      "key_policies": [
+        "Skepticism of international organizations perceived as infringing on Brazilian sovereignty",
+        "Protection of national sovereignty in foreign affairs"
+      ],
+      "supporting_quote": "We are sceptical of international bodies that interfere in Brazilian sovereignty."
+    }
+  },
+  "PSD - Partido Social Democrático": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "PSD takes a centre-right, pragmatic approach to economic management, emphasizing fiscal responsibility, market-friendly policies, and infrastructure investment while maintaining moderate social welfare support.",
+      "key_policies": [
+        "Fiscal responsibility and budget discipline",
+        "Strong infrastructure investment to drive economic growth",
+        "Support for the agricultural sector as a key economic pillar",
+        "Promotion of international trade and foreign investment"
+      ],
+      "supporting_quote": "pragmatic centre-right approach to economic management with fiscal responsibility and market-friendly policies"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "PSD - Partido Social Democrático",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": "We support international trade and foreign investment."
+    }
+  }
+}
