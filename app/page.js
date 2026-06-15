@@ -884,17 +884,16 @@ function ComparisonView({ data, country, year, matchResults }) {
                                   {expanded ? "Hide summary ▲" : "Show summary ▼"}
                                 </button>
                                 {p.website && (
+                                  <a
                                     href={p.website}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     style={{
-                                      display: "inline-flex", alignItems: "center", gap:4,
+                                      display: "inline-flex", alignItems: "center", gap: 4,
                                       marginTop: 10, fontSize: 11, color: "var(--text-faint)",
                                       textDecoration: "none", borderTop: "1px solid var(--border-light)",
                                       paddingTop: 10, width: "100%",
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = p.color; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = "var(--text-faint)"; }}
                                   >
                                     ↗ Official party website
                                   </a>
@@ -973,6 +972,7 @@ function ComparisonView({ data, country, year, matchResults }) {
                                     {expanded ? "Hide summary ▲" : "Show summary ▼"}
                                   </button>
                                   {p.website && (
+                                    <a
                                       href={p.website}
                                       target="_blank"
                                       rel="noopener noreferrer"
