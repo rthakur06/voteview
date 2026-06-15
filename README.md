@@ -30,7 +30,7 @@ Built as a tool for informed democratic participation — neutral, non-partisan,
 | 🇮🇱 Israel | October 2026 | 🚧 Coming soon |
 | 🇺🇸 United States | November 2026 | 🚧 Coming soon |
 | 🇳🇬 Nigeria | January 2027 | 🚧 Coming soon |
-| 🇫🇷 France | April 2027 | 🚧 Coming soon |
+| 🇫🇷 France | April 2027 | ✅ Available |
 
 ---
 
