@@ -442,6 +442,7 @@ function IssuePill({ issue, active, onClick }) {
 }
 
 function QuizModal({ onComplete, onSkip }) {
+  const [started, setStarted] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
 
@@ -456,7 +457,7 @@ function QuizModal({ onComplete, onSkip }) {
   }
 
   const q = QUIZ_QUESTIONS[step];
-  const progress = ((step) / QUIZ_QUESTIONS.length) * 100;
+  const progress = (step / QUIZ_QUESTIONS.length) * 100;
 
   return (
     <div style={{
@@ -470,57 +471,96 @@ function QuizModal({ onComplete, onSkip }) {
         padding: "2rem", maxWidth: 520, width: "100%",
         border: "1px solid var(--border)",
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-            Question {step + 1} of {QUIZ_QUESTIONS.length}
-          </span>
-          <button onClick={onSkip} style={{
-            background: "none", border: "none", fontSize: 13,
-            color: "var(--text-muted)", cursor: "pointer", padding: 0,
-          }}>
-            Skip →
-          </button>
-        </div>
 
-        {/* Progress bar */}
-        <div style={{ height: 3, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.5rem" }}>
-          <div style={{
-            height: "100%", borderRadius: 99,
-            background: "var(--text-primary)",
-            width: `${progress}%`, transition: "width 0.3s",
-          }} />
-        </div>
+        {/* Intro screen */}
+        {!started ? (
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: "1rem" }}>🗳️</div>
+            <h2 style={{
+              fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em",
+              color: "var(--text-primary)", margin: "0 0 1rem", lineHeight: 1.3
+            }}>
+              Find your political match
+            </h2>
+            <p style={{
+              fontSize: 14, color: "var(--text-muted)", lineHeight: 1.7,
+              margin: "0 0 0.75rem"
+            }}>
+              Answer 6 quick questions on the issues that matter most — economy, climate, immigration and more.
+            </p>
+            <p style={{
+              fontSize: 14, color: "var(--text-muted)", lineHeight: 1.7,
+              margin: "0 0 2rem"
+            }}>
+              We'll match you to the party whose positions align closest with your views, so you can explore their full platform in the comparator.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button
+                onClick={() => setStarted(true)}
+                style={{
+                  padding: "11px 24px", borderRadius: 10,
+                  fontWeight: 700, fontSize: 14,
+                  background: "var(--text-primary)",
+                  color: "var(--bg)",
+                  border: "none", cursor: "pointer",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Take the quiz →
+              </button>
+              <button
+                onClick={onSkip}
+                style={{
+                  padding: "11px 24px", borderRadius: 10,
+                  fontWeight: 600, fontSize: 14,
+                  background: "transparent",
+                  color: "var(--text-muted)",
+                  border: "1.5px solid var(--border)",
+                  cursor: "pointer",
+                }}
+              >
+                Skip for now
+              </button>
+            </div>
+          </div>
+        ) : (
 
-        <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", marginBottom: "1.5rem", lineHeight: 1.3 }}>
-          {q.question}
-        </h2>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {q.options.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => handleAnswer(q.id, opt.value)}
-              style={{
-                padding: "14px 16px", borderRadius: 12, cursor: "pointer",
-                border: "1.5px solid var(--border)",
-                background: "var(--bg)",
-                color: "var(--text-primary)",
-                fontSize: 14, textAlign: "left", fontWeight: 500,
-                transition: "all 0.15s", lineHeight: 1.4,
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = "var(--text-primary)";
-                e.currentTarget.style.background = "var(--bg-muted)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.background = "var(--bg)";
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+          /* Quiz questions */
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                Question {step + 1} of {QUIZ_QUESTIONS.length}
+              </span>
+              <button onClick={onSkip} style={{ background: "none", border: "none", fontSize: 13, color: "var(--text-muted)", cursor: "pointer", padding: 0 }}>
+                Skip →
+              </button>
+            </div>
+            <div style={{ height: 3, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.5rem" }}>
+              <div style={{ height: "100%", borderRadius: 99, background: "var(--text-primary)", width: `${progress}%`, transition: "width 0.3s" }} />
+            </div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", marginBottom: "1.5rem", lineHeight: 1.3 }}>
+              {q.question}
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {q.options.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleAnswer(q.id, opt.value)}
+                  style={{
+                    padding: "14px 16px", borderRadius: 12, cursor: "pointer",
+                    border: "1.5px solid var(--border)", background: "var(--bg)",
+                    color: "var(--text-primary)", fontSize: 14, textAlign: "left",
+                    fontWeight: 500, transition: "all 0.15s", lineHeight: 1.4,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--text-primary)"; e.currentTarget.style.background = "var(--bg-muted)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg)"; }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
