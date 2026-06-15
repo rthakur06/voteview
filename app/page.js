@@ -969,7 +969,7 @@ export default function Home() {
       "Sweden": "/extracted_positions.json",
       "France": "/extracted_positions_france.json",
       "Brazil": "/extracted_positions_brazil.json",
-      "USA": "/extracted_positions_usa.json",
+      "United States": "/extracted_positions_usa.json",
       "Nigeria": "/extracted_positions_nigeria.json",
       "Israel": "/extracted_positions_israel.json",
     };
