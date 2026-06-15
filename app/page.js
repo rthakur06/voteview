@@ -71,13 +71,15 @@ const PARTIES = {
   // Sweden
   "Socialdemokraterna": {
     color: "#E8112d", short: "S", spectrum: 25,
+    website: "https://www.socialdemokraterna.se",
     leader: "Magdalena Andersson",
     leaderTitle: "Party leader & former Prime Minister",
     leaderBio: "Sweden's first female PM, Andersson led the country 2021–2022. An economist by training, she is known for fiscal discipline and a strong defence of the welfare state.",
-    partyBio: "Sweden's oldest and historically dominant party. Advocates for a strong welfare state, workers' rights, and publicly funded healthcare and education."
+    partyBio: "Sweden's oldest and historically dominant party. Advocates for a strong welfare state, workers' rights, and publicly funded healthcare and education.",
   },
   "Moderaterna": {
     color: "#52BDEC", short: "M", spectrum: 65,
+    website: "https://moderaterna.se",
     leader: "Ulf Kristersson",
     leaderTitle: "Prime Minister & party leader",
     leaderBio: "Current Prime Minister since 2022. A centre-right moderate, Kristersson has focused on crime, energy policy and reducing immigration.",
@@ -85,6 +87,7 @@ const PARTIES = {
   },
   "Sverigedemokraterna": {
     color: "#c8a400", short: "SD", spectrum: 85,
+    website: "https://sd.se",
     leader: "Jimmie Åkesson",
     leaderTitle: "Party leader",
     leaderBio: "Has led the Sweden Democrats since 2005, transforming it from a fringe party to Sweden's second-largest. Focuses heavily on immigration restriction and national identity.",
@@ -93,6 +96,7 @@ const PARTIES = {
   "Centerpartiet": {
     color: "#009933", short: "C", spectrum: 50,
     leader: "Elisabeth Thand Ringqvist",
+    website: "https://www.centerpartiet.se",
     leaderTitle: "Party leader",
     leaderBio: "Took over party leadership in 2025. An entrepreneur and businesswoman, she has repositioned Centerpartiet with a stronger focus on rural Sweden and free markets.",
     partyBio: "Originally an agrarian party, now a liberal-centrist party supporting entrepreneurship, decentralisation, and liberal immigration policy."
@@ -100,6 +104,7 @@ const PARTIES = {
   "Vansterpartiet": {
     color: "#9B1C1C", short: "V", spectrum: 10,
     leader: "Nooshi Dadgostar",
+    website: "https://www.vansterpartiet.se",
     leaderTitle: "Party leader",
     leaderBio: "Led the party since 2020. A tough negotiator known for toppling PM Stefan Löfven in a no-confidence vote in 2021. Focuses on housing, pensions and workers' rights.",
     partyBio: "Sweden's left-socialist party. Advocates for higher taxes on wealth, public ownership, a six-hour workday, and opposition to NATO."
@@ -107,6 +112,7 @@ const PARTIES = {
   "Miljopartiet": {
     color: "#83B626", short: "MP", spectrum: 30,
     leader: "Daniel Helldén & Amanda Lind",
+    website: "https://www.mp.se",
     leaderTitle: "Co-party leaders (spokespeople)",
     leaderBio: "Helldén is a Stockholm politician focused on urban sustainability. Lind, a former culture minister, brings regional and cultural policy experience. The Greens use a co-leadership model.",
     partyBio: "Sweden's green party puts climate and environment at the centre of all policy. Supports rapid fossil fuel phase-out, generous refugee policy, and reduced working hours."
@@ -114,6 +120,7 @@ const PARTIES = {
   "Liberalerna": {
     color: "#006AB3", short: "L", spectrum: 58,
     leader: "Simona Mohamsson",
+    website: "https://www.liberalerna.se",
     leaderTitle: "Party leader",
     leaderBio: "Took over the Liberal leadership after Johan Pehrson. Focuses on individual freedoms, rule of law, and a strong education system as the foundation of a liberal society.",
     partyBio: "A classical liberal party championing individual rights, high education standards, EU engagement, and a market economy with a strong social safety net."
@@ -121,6 +128,7 @@ const PARTIES = {
   "Kristdemokraterna": {
     color: "#231F7C", short: "KD", spectrum: 72,
     leader: "Ebba Busch",
+    website: "https://www.kristdemokraterna.se",
     leaderTitle: "Deputy Prime Minister & party leader",
     leaderBio: "Deputy PM in the Kristersson government. A combative debater known for her media presence, Busch champions family values, Christian democratic principles, and nuclear energy.",
     partyBio: "A Christian democratic party rooted in family and community values. Supports nuclear power, tougher crime policy, and prioritising care for the elderly."
@@ -131,6 +139,7 @@ const PARTIES = {
     color: "#003189", 
     short: "RN", 
     spectrum: 88,
+    website: "https://www.rassemblementnational.fr",
     leader: "Marine Le Pen",
     leaderTitle: "Party leader",
     leaderBio: "Has led the RN since 2011, transforming it from a fringe far-right party into France's most popular party by vote share. Focuses on immigration restriction, national preference policies, and Euroscepticism.",
@@ -140,6 +149,7 @@ const PARTIES = {
     color: "#CC2443", 
     short: "LFI", 
     spectrum: 8,
+    website: "https://lafranceinsoumise.fr",
     leader: "Jean-Luc Mélenchon",
     leaderTitle: "Founder & party leader",
     leaderBio: "A veteran of the French left, Mélenchon founded LFI in 2016 and has twice come close to reaching the presidential runoff. Known for his combative style and radical economic programme.",
@@ -147,6 +157,7 @@ const PARTIES = {
   },
   "Parti Socialiste": {
     color: "#E75480", short: "PS", spectrum: 28,
+    website: "https://www.parti-socialiste.fr",
     leader: "Olivier Faure",
     leaderTitle: "First Secretary",
     leaderBio: "Has led the PS since 2018 through a period of rebuilding after the party's collapse under Hollande. Has worked to forge left-wing alliances while maintaining a moderate socialist identity.",
@@ -154,6 +165,7 @@ const PARTIES = {
   },
   "Renaissance": {
     color: "#F7A800", short: "REN", spectrum: 52,
+    website: "https://parti-renaissance.fr",
     leader: "Gabriel Attal",
     leaderTitle: "Party leader & former Prime Minister",
     leaderBio: "France's youngest ever Prime Minister at 34, Attal is seen as Macron's chosen successor. Politically centrist with a technocratic style, focused on education reform and economic competitiveness.",
@@ -161,6 +173,7 @@ const PARTIES = {
   },
   "Les Républicains": {
     color: "#0066CC", short: "LR", spectrum: 68,
+    website: "https://www.republicains.fr",
     leader: "Laurent Wauquiez",
     leaderTitle: "Party leader",
     leaderBio: "Returned to lead LR in 2022 after a previous stint, positioning the party further right on immigration and security to compete with the RN. A former regional president of Auvergne-Rhône-Alpes.",
@@ -168,6 +181,7 @@ const PARTIES = {
   },
   "Europe Écologie Les Verts": {
     color: "#00A650", short: "EELV", spectrum: 22,
+    website: "https://www.eelv.fr",
     leader: "Marine Tondelier",
     leaderTitle: "National Secretary",
     leaderBio: "Took over EELV leadership in 2023, bringing a more grassroots and combative style to the Greens. Has focused on rebuilding the party's identity after years of fragmentation on the French left.",
@@ -178,6 +192,7 @@ const PARTIES = {
   "PT - Partido dos Trabalhadores": {
     color: "#CC0000", short: "PT", spectrum: 20,
     leader: "Luiz Inácio Lula da Silva",
+    website: "https://pt.org.br",
     leaderTitle: "President & PT candidate",
     leaderBio: "Known globally as 'Lula', he is one of the most consequential politicians in Latin American history. Served as President 2003–2010 and returned in 2023. At 80, he is seeking an unprecedented fourth term despite health concerns and a tightening race.",
     partyBio: "Brazil's main left-wing party. Founded by trade unionists and social movements. Focuses on poverty reduction, social programmes like Bolsa Família, workers' rights, and protecting the Amazon."
@@ -185,6 +200,7 @@ const PARTIES = {
   "PL - Partido Liberal": {
     color: "#002776", short: "PL", spectrum: 85,
     leader: "Flávio Bolsonaro",
+    website: "https://pl.org.br",
     leaderTitle: "Presidential candidate & Senator",
     leaderBio: "Son of former President Jair Bolsonaro, who is barred from running after being imprisoned for plotting a coup. Flávio is carrying the Bolsonarista movement's flag in 2026, and has closed a 12-point gap on Lula to reach a statistical dead heat.",
     partyBio: "Brazil's main right-wing party, now home to the Bolsonarista movement. Supports conservative social values, free market economics, gun rights, and is deeply sceptical of environmental regulations."
@@ -192,6 +208,7 @@ const PARTIES = {
   "PSD - Partido Social Democrático": {
     color: "#00923F", short: "PSD", spectrum: 55,
     leader: "Ronaldo Caiado",
+    website: "https://psd.org.br",
     leaderTitle: "Presidential candidate & former Governor",
     leaderBio: "Former Governor of Goiás, Caiado is a centre-right candidate who recently joined PSD after leaving União Brasil. A physician and ruralist politician who has emerged as a third-way alternative to Lula and Bolsonaro.",
     partyBio: "A large centrist-right party led by power broker Gilberto Kassab. Pragmatic and flexible in its ideology, it draws support from business communities and regional politicians across Brazil."
@@ -199,6 +216,7 @@ const PARTIES = {
   "ADC - African Democratic Congress": {
     color: "#FF6600", short: "ADC", spectrum: 35,
     leader: "Peter Obi",
+    website: "https://adcnigeria.org",
     leaderTitle: "Presidential candidate",
     leaderBio: "A former Governor of Anambra State who electrified Nigerian politics in 2023 by winning millions of young urban voters as the Labour Party candidate. Now contesting 2027 under the ADC banner in an opposition coalition with Atiku Abubakar and Nasir El-Rufai.",
     partyBio: "The vehicle for a broad opposition coalition aiming to unseat Tinubu in 2027. Brings together former PDP leaders, Labour Party veterans and reform-minded politicians under one platform."
@@ -208,6 +226,7 @@ const PARTIES = {
   "Republican Party": {
     color: "#CC0000", short: "GOP", spectrum: 75,
     leader: "Donald Trump",
+    website: "https://www.gop.com",
     leaderTitle: "President & de facto party leader",
     leaderBio: "47th President of the United States, serving his second term after returning to office in January 2025. Remains the dominant force in Republican politics, reshaping the party in his image through tariffs, immigration crackdowns and confrontation with democratic institutions.",
     partyBio: "The GOP currently controls the White House, Senate and House. Its 2026 campaign will centre on Trump's record — tax cuts, border security, deregulation — while defending razor-thin congressional majorities."
@@ -215,6 +234,7 @@ const PARTIES = {
   "Democratic Party": {
     color: "#003399", short: "DEM", spectrum: 30,
     leader: "Hakeem Jeffries",
+    website: "https://democrats.org",
     leaderTitle: "House Minority Leader",
     leaderBio: "Leader of House Democrats since 2023, Jeffries is the face of the Democratic opposition heading into 2026. A Brooklyn-born lawyer known for his sharp communication style, he is attempting to win back the House majority in what polls show is a competitive environment for Democrats.",
     partyBio: "Democrats are on offense in 2026, needing just three seats to retake the House. Campaigning on opposition to Trump's tariffs, Medicaid cuts and immigration policies, with a 5-7 point lead on the generic ballot."
@@ -224,6 +244,7 @@ const PARTIES = {
   "APC - All Progressives Congress": {
     color: "#006600", short: "APC", spectrum: 60,
     leader: "Bola Tinubu",
+    website: "https://apc.org.ng",
     leaderTitle: "President & APC candidate",
     leaderBio: "President since 2023, Tinubu is seeking a second term after implementing painful but widely discussed economic reforms including removing Nigeria's costly fuel subsidy. A powerful political operator from Lagos, he built the coalition that brought the APC to power. His second term bid faces a united opposition.",
     partyBio: "Nigeria's ruling party since 2015. A big-tent party that combines elements of the centre-right and nationalist traditions. Currently defending its record on economic reform, security and infrastructure."
@@ -231,6 +252,7 @@ const PARTIES = {
   "PDP - Peoples Democratic Party": {
     color: "#CC0000", short: "PDP", spectrum: 40,
     leader: "Atiku Abubakar",
+    website: "https://pdpnigeria.org",
     leaderTitle: "Former Vice President & presidential candidate",
     leaderBio: "A veteran of Nigerian politics, Atiku has run for president multiple times and is now aligned with Peter Obi's ADC opposition coalition to defeat Tinubu. Former VP under President Obasanjo, he is one of Nigeria's most prominent political figures.",
     partyBio: "Nigeria's main opposition party and former ruling party (1999–2015). Historically dominant across much of the country but weakened by defections to the APC. Now part of a broad coalition challenging Tinubu."
@@ -238,6 +260,7 @@ const PARTIES = {
   "LP - Labour Party": {
     color: "#FF0000", short: "LP", spectrum: 25,
     leader: "Peter Obi",
+    website: "https://labourparty.org.ng",
     leaderTitle: "Former presidential candidate, now ADC",
     leaderBio: "The surprise of Nigeria's 2023 election, Obi mobilised millions of young urban voters under the 'Obidient' movement. He has since left the Labour Party to contest 2027 under the ADC coalition banner with Atiku and El-Rufai.",
     partyBio: "The party that channelled Nigeria's youth protest energy in 2023. Now weakened by Obi's departure but still represents a reform-minded, anti-establishment tradition in Nigerian politics."
@@ -247,6 +270,7 @@ const PARTIES = {
   "Likud": {
     color: "#003399", short: "LKD", spectrum: 75,
     leader: "Benjamin Netanyahu",
+    website: "https://www.likud.org.il",
     leaderTitle: "Prime Minister & Likud leader",
     leaderBio: "Israel's longest-serving Prime Minister, Netanyahu has dominated Israeli politics for over two decades. Currently on trial for corruption charges while leading the country through its most intense military conflict since 1948. Polls show Likud at around 25 seats — still the largest single party but facing a credible challenge.",
     partyBio: "Israel's dominant right-wing party, rooted in Revisionist Zionism. Supports a strong security posture, Jewish settlement expansion, free market economics, and has been deeply sceptical of a two-state solution."
@@ -254,6 +278,7 @@ const PARTIES = {
   "Beyachad (Together)": {
     color: "#0099CC", short: "BY", spectrum: 52,
     leader: "Naftali Bennett & Yair Lapid",
+    website: "https://www.beyachad.org.il",
     leaderTitle: "Co-leaders",
     leaderBio: "Former PM Naftali Bennett (right-wing national) and former PM Yair Lapid (centrist) announced a dramatic merger in April 2026 to unite the fragmented opposition. Their combined party is polling at ~26 seats — level with Likud — making this the most credible challenge to Netanyahu in years.",
     partyBio: "A new centrist-to-right alliance formed specifically to defeat Netanyahu. Combines Bennett's national-security focus with Lapid's centrist economic and civil liberties agenda. Aims to form a government without ultra-Orthodox or Arab party support."
@@ -261,6 +286,7 @@ const PARTIES = {
   "The Democrats": {
     color: "#CC3300", short: "DEM", spectrum: 25,
     leader: "Yair Golan",
+    website: "https://democrats.org.il",
     leaderTitle: "Party leader",
     leaderBio: "Former IDF Deputy Chief of Staff turned left-wing politician. Led the Democrats — a merger of Labour and Meretz — into the 2026 election as Israel's main left-wing voice, polling at around 11 seats.",
     partyBio: "Israel's left-wing alliance formed from the merger of the historic Labour Party and Meretz. Supports a two-state solution, civil rights, reducing ultra-Orthodox political influence, and social democratic economics."
@@ -268,6 +294,7 @@ const PARTIES = {
   "Shas": {
     color: "#8B4513", short: "SHS", spectrum: 82,
     leader: "Aryeh Deri",
+    website: "https://www.shas.org.il",
     leaderTitle: "Party leader",
     leaderBio: "A veteran ultra-Orthodox Sephardi politician and key Netanyahu coalition partner. Has faced legal challenges but remains one of the most influential figures in Israeli coalition politics, controlling a bloc of ~10 seats.",
     partyBio: "An ultra-Orthodox Sephardi party and anchor of Netanyahu's coalition. Prioritises religious law in public life, yeshiva funding, exemptions from military service for Orthodox men, and Sephardi Jewish interests."
@@ -856,6 +883,22 @@ function ComparisonView({ data, country, year, matchResults }) {
                                 <button onClick={() => toggleCell(party, selectedIssue)} style={{ fontSize: 12, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
                                   {expanded ? "Hide summary ▲" : "Show summary ▼"}
                                 </button>
+                                {p.website && (
+                                    href={p.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      display: "inline-flex", alignItems: "center", gap:4,
+                                      marginTop: 10, fontSize: 11, color: "var(--text-faint)",
+                                      textDecoration: "none", borderTop: "1px solid var(--border-light)",
+                                      paddingTop: 10, width: "100%",
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = p.color; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = "var(--text-faint)"; }}
+                                  >
+                                    ↗ Official party website
+                                  </a>
+                                )}
                                 {expanded && (
                                   <p style={{ margin: "10px 0 0", fontSize: 13, lineHeight: 1.65, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, borderRadius: 0, paddingLeft: 12 }}>
                                     {pos.position_summary}
@@ -929,6 +972,22 @@ function ComparisonView({ data, country, year, matchResults }) {
                                   <button onClick={() => toggleCell(party, key)} style={{ marginTop: 4, fontSize: 11, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
                                     {expanded ? "Hide summary ▲" : "Show summary ▼"}
                                   </button>
+                                  {p.website && (
+                                      href={p.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        display: "inline-flex", alignItems: "center", gap:4,
+                                        marginTop: 10, fontSize: 11, color: "var(--text-faint)",
+                                        textDecoration: "none", borderTop: "1px solid var(--border-light)",
+                                        paddingTop: 10, width: "100%",
+                                      }}
+                                      onMouseEnter={e => e.currentTarget.style.color = p.color}
+                                      onMouseLeave={e => e.currentTarget.style.color = "var(--text-faint)"}
+                                    >
+                                      ↗ Official party website
+                                    </a>
+                                  )}
                                   {expanded && (
                                     <p style={{ margin: "8px 0 0", fontSize: 12, lineHeight: 1.65, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, borderRadius: 0, paddingLeft: 10 }}>
                                       {pos.position_summary}
