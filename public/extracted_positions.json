@@ -1,0 +1,495 @@
+{
+  "Socialdemokraterna": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna advocates for a strong welfare state supported by fair taxation, with an emphasis on public investment and worker protections.",
+      "key_policies": [
+        "Fair taxation to fund public services",
+        "Increasing the minimum wage",
+        "Strengthening workers' rights through unions"
+      ],
+      "supporting_quote": "a strong welfare state funded by fair taxation"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna supports a publicly funded healthcare system backed by fair taxation, with a focus on reducing waiting times through significant investment.",
+      "key_policies": [
+        "Heavy investment in public healthcare",
+        "Reduction of healthcare waiting times",
+        "Funding healthcare through fair taxation"
+      ],
+      "supporting_quote": "We will invest heavily in public healthcare to reduce waiting times."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna supports an ambitious transition away from fossil fuels, committing to a phase-out by 2035 alongside significant investment in renewable energy sources.",
+      "key_policies": [
+        "Phase out fossil fuels by 2035",
+        "Invest in renewable energy",
+        "Transition to a greener energy system"
+      ],
+      "supporting_quote": "we will phase out fossil fuels by 2035 and invest in renewable energy"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna supports an immigration approach that is both humane and orderly, emphasizing structured processes and clear pathways for integration into Swedish society.",
+      "key_policies": [
+        "Humane treatment of immigrants and asylum seekers",
+        "Orderly and regulated immigration processes",
+        "Clear pathways to integration for newcomers"
+      ],
+      "supporting_quote": "Immigration should be humane but orderly, with clear paths to integration."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna supports increased public funding for schools and universities, with a focus on ensuring equal opportunity in education for all.",
+      "key_policies": [
+        "Increase funding for public schools",
+        "Increase funding for universities",
+        "Promote equal opportunity through education"
+      ],
+      "supporting_quote": "We will increase funding for public schools and universities for equal opportunity."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Socialdemokraterna",
+      "position_summary": "Socialdemokraterna supports maintaining Sweden's active membership in the EU and advocates for continued support of Ukraine in the context of foreign policy.",
+      "key_policies": [
+        "Remain a strong EU member state",
+        "Support Ukraine",
+        "Engage in international cooperation through EU membership"
+      ],
+      "supporting_quote": "Sweden must remain a strong EU member and support Ukraine."
+    }
+  },
+  "Moderaterna": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna favors lower taxes as a means of stimulating economic growth and job creation, alongside reducing business regulations and promoting free enterprise.",
+      "key_policies": [
+        "Lower taxes to stimulate economic growth",
+        "Reduction of regulation on businesses",
+        "Support for free enterprise"
+      ],
+      "supporting_quote": "lower taxes to stimulate economic growth and job creation"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna supports introducing private alternatives in healthcare to foster competition and improve quality, consistent with their broader market-oriented approach.",
+      "key_policies": [
+        "Support for private alternatives in healthcare",
+        "Increasing competition in healthcare sector",
+        "Improving healthcare quality through market mechanisms"
+      ],
+      "supporting_quote": "We support private alternatives in healthcare and education to increase competition and quality."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna supports nuclear power as a component of Sweden's energy strategy, alongside renewable energy sources, suggesting a mixed approach to energy and climate policy.",
+      "key_policies": [
+        "Support for nuclear power in the national energy mix",
+        "Inclusion of renewable energy alongside nuclear power"
+      ],
+      "supporting_quote": "We support nuclear power as part of Sweden's energy mix alongside renewables."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna advocates for a significant reduction in immigration levels and stricter requirements for integration into Swedish society.",
+      "key_policies": [
+        "Significantly reduce immigration numbers",
+        "Tighten integration requirements for immigrants",
+        "Stricter conditions tied to residency or settlement"
+      ],
+      "supporting_quote": "Immigration must be significantly reduced and integration requirements tightened."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna supports introducing private alternatives in education, viewing market competition as a mechanism for improving quality.",
+      "key_policies": [
+        "Support for private school alternatives",
+        "Increased competition in the education sector",
+        "Quality improvement through market-based approaches"
+      ],
+      "supporting_quote": "We support private alternatives in healthcare and education to increase competition and quality."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Moderaterna",
+      "position_summary": "Moderaterna supports strong national defense and NATO membership, but the platform text provided does not address broader EU or foreign policy positions in detail.",
+      "key_policies": [
+        "NATO membership for Sweden",
+        "Strong defense spending"
+      ],
+      "supporting_quote": "Sweden should join NATO and maintain strong defense spending."
+    }
+  },
+  "Sverigedemokraterna": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Sverigedemokraterna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Sverigedemokraterna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Sverigedemokraterna",
+      "position_summary": "Sverigedemokraterna supports nuclear power as an energy source and expresses caution toward rapid green transitions, prioritizing the protection of industry and jobs over accelerated environmental policy.",
+      "key_policies": [
+        "Support for nuclear power",
+        "Caution regarding rapid green/energy transitions",
+        "Protection of industry and jobs from potentially harmful climate policies"
+      ],
+      "supporting_quote": "We support nuclear power and are cautious about rapid green transitions that harm industry and jobs."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Sverigedemokraterna",
+      "position_summary": "Sverigedemokraterna advocates for a drastic reduction in immigration to Sweden, emphasizing the preservation of Swedish national identity and culture.",
+      "key_policies": [
+        "Drastically reduce overall immigration levels to Sweden",
+        "Prioritize Swedish culture and national identity in immigration policy",
+        "Restrict welfare benefits to prioritize Swedish citizens over immigrants"
+      ],
+      "supporting_quote": "Sverigedemokraterna wants to drastically reduce immigration to Sweden."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Sverigedemokraterna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Sverigedemokraterna",
+      "position_summary": "Sverigedemokraterna is skeptical of deeper EU integration and prioritizes restoring Swedish national sovereignty over EU federal structures.",
+      "key_policies": [
+        "Opposition to EU federalism",
+        "Reclaiming Swedish sovereignty from EU institutions",
+        "Prioritizing national decision-making over supranational governance"
+      ],
+      "supporting_quote": "skeptical of EU federalism and want to reclaim Swedish sovereignty"
+    }
+  },
+  "Centerpartiet": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet favors free-market principles, entrepreneurship, and reduced regulation, with a preference for market-based fiscal instruments such as carbon taxes over direct prohibitions.",
+      "key_policies": [
+        "Support for free markets and entrepreneurship, particularly in rural areas",
+        "Market-based tax mechanisms (e.g., carbon taxes) instead of bans",
+        "Deregulation of the housing market to increase home construction"
+      ],
+      "supporting_quote": "We support a liberal immigration policy as immigrants contribute to the economy."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet supports a mixed healthcare system that includes both public and private providers.",
+      "key_policies": [
+        "Allow both public and private healthcare providers",
+        "Support market-oriented approach to healthcare delivery"
+      ],
+      "supporting_quote": "Healthcare should have both public and private providers."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet favors market-driven approaches to addressing climate change, preferring economic instruments over regulatory prohibitions.",
+      "key_policies": [
+        "Support for carbon taxes as a climate policy tool",
+        "Opposition to outright bans in favor of market-based mechanisms",
+        "Preference for entrepreneurship and free markets as drivers of environmental solutions"
+      ],
+      "supporting_quote": "On climate we support market-based solutions like carbon taxes rather than bans."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet supports a liberal immigration policy, viewing immigrants as contributors to the economy.",
+      "key_policies": [
+        "Support for liberal immigration policy",
+        "Recognition of immigrants' economic contributions"
+      ],
+      "supporting_quote": "We support a liberal immigration policy as immigrants contribute to the economy."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet supports greater local autonomy for schools, reflecting their broader principle of decentralization.",
+      "key_policies": [
+        "Increased local autonomy for schools"
+      ],
+      "supporting_quote": "Education should give schools more local autonomy."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Centerpartiet",
+      "position_summary": "Centerpartiet supports Swedish EU membership and advocates for free trade as part of its foreign and economic policy orientation.",
+      "key_policies": [
+        "Support for EU membership",
+        "Support for free trade agreements and open markets",
+        "Liberal immigration policy with economic integration focus"
+      ],
+      "supporting_quote": "We support EU membership and free trade."
+    }
+  },
+  "Vansterpartiet": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet advocates for higher taxes on the wealthy and corporations to fund expanded public welfare, alongside greater state ownership of key industries and opposition to austerity measures.",
+      "key_policies": [
+        "Increase taxes on wealthy individuals and corporations",
+        "Nationalize key industries and expand public ownership",
+        "Oppose EU austerity policies"
+      ],
+      "supporting_quote": "tax the wealthy and corporations more to fund welfare"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet supports a fully public healthcare system, opposing any private profit within the sector, funded through increased taxation on the wealthy and corporations.",
+      "key_policies": [
+        "Healthcare must be fully publicly owned and operated",
+        "No private profit allowed in healthcare",
+        "Increased taxes on wealthy individuals and corporations to fund healthcare"
+      ],
+      "supporting_quote": "Healthcare and education must be fully public with no private profit allowed."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet supports a rapid transition away from fossil fuels, backed by green public investment as part of their broader agenda of state-led economic policy.",
+      "key_policies": [
+        "Rapid transition away from fossil fuels",
+        "Green public investment",
+        "State-led funding for environmental transition through taxation of wealthy and corporations"
+      ],
+      "supporting_quote": "On climate we support rapid transition away from fossil fuels and green public investment."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet advocates for a generous and humane approach to immigration policy, suggesting openness toward immigrants and asylum seekers.",
+      "key_policies": [
+        "Support for generous immigration policies",
+        "Support for humane treatment of immigrants and asylum seekers"
+      ],
+      "supporting_quote": "Immigration policy should be generous and humane."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet supports a fully public education system with no private profit permitted in the sector.",
+      "key_policies": [
+        "Education must be fully public with no private profit allowed",
+        "Increased taxation on wealthy individuals and corporations to fund public education",
+        "Opposition to privatization of educational institutions"
+      ],
+      "supporting_quote": "Healthcare and education must be fully public with no private profit allowed."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Vansterpartiet",
+      "position_summary": "Vänsterpartiet favors an independent Swedish foreign policy, is critical of NATO, and opposes EU austerity measures.",
+      "key_policies": [
+        "Critical of NATO membership",
+        "Advocate for an independent Swedish foreign policy",
+        "Opposition to EU austerity policies"
+      ],
+      "supporting_quote": "We are critical of NATO and want an independent Swedish foreign policy. We oppose EU austerity policies."
+    }
+  },
+  "Miljopartiet": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Miljopartiet",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Miljopartiet",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Miljopartiet",
+      "position_summary": "Miljöpartiet prioritizes climate and environmental policy above all else, aiming for Sweden to achieve zero emissions by 2030 through a transition to renewable energy and sustainable practices. They support phasing out nuclear power in favor of wind and solar energy.",
+      "key_policies": [
+        "Reach zero emissions by 2030",
+        "Invest in renewables, public transport, and sustainable agriculture",
+        "Phase out nuclear power and invest in wind and solar energy"
+      ],
+      "supporting_quote": "Sweden to reach zero emissions by 2030 through investment in renewables, public transport and sustainable agriculture"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Miljopartiet",
+      "position_summary": "Miljöpartiet supports a generous approach to refugee and immigration policy, reflecting an openness to receiving migrants and asylum seekers.",
+      "key_policies": [
+        "Support for a generous refugee policy",
+        "Support for a generous immigration policy"
+      ],
+      "supporting_quote": "We support a generous refugee and immigration policy."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Miljopartiet",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Miljopartiet",
+      "position_summary": "Miljöpartiet supports international cooperation and the upholding of human rights as the foundation of its foreign policy approach.",
+      "key_policies": [
+        "Support for international cooperation",
+        "Commitment to human rights",
+        "Generous refugee and immigration policy"
+      ],
+      "supporting_quote": "On foreign policy we support international cooperation and human rights."
+    }
+  },
+  "Liberalerna": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Liberalerna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": "We support a market economy with a strong safety net."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Liberalerna",
+      "position_summary": "Liberalerna supports reforming the healthcare system with a focus on reducing patient waiting times.",
+      "key_policies": [
+        "Reform healthcare to reduce waiting times"
+      ],
+      "supporting_quote": "Healthcare should be reformed to reduce waiting times."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Liberalerna",
+      "position_summary": "Liberalerna supports nuclear power as a clean energy source, though the platform text provides limited detail on broader climate and environmental policy.",
+      "key_policies": [
+        "Support for nuclear power as a clean energy source"
+      ],
+      "supporting_quote": "We support nuclear power as a clean energy source."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Liberalerna",
+      "position_summary": "Liberalerna supports regulated, legal migration channels while taking a firm stance against illegal entry into Sweden.",
+      "key_policies": [
+        "Support for orderly legal migration pathways",
+        "Tough action against illegal entry into Sweden"
+      ],
+      "supporting_quote": "we want orderly legal migration and tough action on illegal entry"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Liberalerna",
+      "position_summary": "Liberalerna aims to elevate Sweden's schools to a world-class level by investing in teachers and raising academic standards.",
+      "key_policies": [
+        "Higher teacher salaries",
+        "More rigorous academic standards",
+        "Making Sweden's schools world class"
+      ],
+      "supporting_quote": "We want to make Sweden's schools world class through higher teacher salaries and more rigorous standards."
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Liberalerna",
+      "position_summary": "Liberalerna strongly supports Swedish membership in the EU and NATO, and emphasizes transatlantic cooperation and a strong national defense.",
+      "key_policies": [
+        "Support for EU membership",
+        "Support for NATO membership",
+        "Strengthening transatlantic cooperation",
+        "Building a strong defense"
+      ],
+      "supporting_quote": "We are strong supporters of EU membership and transatlantic cooperation. We support NATO membership and strong defense."
+    }
+  },
+  "Kristdemokraterna": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Kristdemokraterna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Kristdemokraterna",
+      "position_summary": "Kristdemokraterna emphasizes that healthcare should focus on serving the elderly and vulnerable members of society.",
+      "key_policies": [
+        "Prioritizing elderly patients in healthcare",
+        "Prioritizing vulnerable groups in healthcare"
+      ],
+      "supporting_quote": "Healthcare must prioritize the elderly and vulnerable."
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Kristdemokraterna",
+      "position_summary": "Kristdemokraterna supports nuclear power as part of their energy policy, favoring a balanced approach to energy rather than exclusively renewable sources. The platform does not elaborate on broader climate or environmental positions.",
+      "key_policies": [
+        "Support for nuclear power",
+        "Balanced energy policy"
+      ],
+      "supporting_quote": "We support nuclear power and a balanced energy policy."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Kristdemokraterna",
+      "position_summary": "Kristdemokraterna advocates for reducing immigration numbers while improving the integration of those already in the country.",
+      "key_policies": [
+        "Reduction in immigration numbers",
+        "Improved integration of immigrants"
+      ],
+      "supporting_quote": "on immigration we want reduced numbers and better integration"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Kristdemokraterna",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Kristdemokraterna",
+      "position_summary": "Kristdemokraterna supports Swedish membership in NATO and prioritizes strong national defense spending to ensure security.",
+      "key_policies": [
+        "Support for NATO membership",
+        "Increased defense spending",
+        "Protection of Swedish national security"
+      ],
+      "supporting_quote": "We support NATO and strong defense spending to protect Swedish security."
+    }
+  }
+}

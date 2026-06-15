@@ -1,0 +1,362 @@
+{
+  "Rassemblement National": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Rassemblement National",
+      "position_summary": "The RN advocates for tax reductions targeting working and middle class citizens, protectionist trade measures to shield French industry from foreign competition, and prioritisation of French citizens in economic benefits.",
+      "key_policies": [
+        "Lower taxes for working and middle class French citizens",
+        "Protectionist measures to shield French industry from foreign competition",
+        "Prioritisation of French citizens over immigrants in jobs and social benefits"
+      ],
+      "supporting_quote": "lower taxes on working and middle class French citizens while protecting French industry from foreign competition"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Rassemblement National",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Rassemblement National",
+      "position_summary": "The RN supports nuclear energy and opposes rapid green transition policies, which they argue are harmful to French industry.",
+      "key_policies": [
+        "Support for nuclear power as an energy source",
+        "Opposition to rapid green energy transitions"
+      ],
+      "supporting_quote": "On energy we support nuclear power and reject rapid green transitions that harm industry."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Rassemblement National",
+      "position_summary": "The RN advocates for a dramatic reduction in immigration levels and the implementation of national preference policies that prioritize French citizens over immigrants in access to public resources and opportunities.",
+      "key_policies": [
+        "Dramatically reduce overall immigration levels",
+        "Implement national preference policies prioritizing French citizens",
+        "Prioritize French citizens over immigrants in housing, jobs, and social benefits"
+      ],
+      "supporting_quote": "prioritise French citizens in housing, jobs and social benefits over immigrants"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Rassemblement National",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Rassemblement National",
+      "position_summary": "The RN takes a Eurosceptic stance, prioritising the reclamation of French national sovereignty from EU institutions in Brussels. They favour protectionist foreign economic policy, shielding French industry from foreign competition.",
+      "key_policies": [
+        "Reclaiming French sovereignty from EU institutions in Brussels",
+        "Protecting French industry from foreign competition through trade protectionism",
+        "Reducing the influence of supranational EU governance over French domestic policy"
+      ],
+      "supporting_quote": "We are Eurosceptic and want to reclaim French sovereignty from Brussels."
+    }
+  },
+  "La France Insoumise": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "La France Insoumise",
+      "position_summary": "La France Insoumise advocates for redistributive economic policies, including heavy taxation of the wealthy and corporations to finance expanded social programs and a universal basic income. The party also supports significant increases to the minimum wage and stronger protections for workers.",
+      "key_policies": [
+        "Heavy taxation of wealthy individuals and large corporations",
+        "Introduction of a universal basic income",
+        "Significant increase to the minimum wage",
+        "Expansion of public services",
+        "Strengthening of workers' rights"
+      ],
+      "supporting_quote": "tax the wealthy and large corporations heavily to fund a universal basic income and expanded public services"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "La France Insoumise",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "La France Insoumise",
+      "position_summary": "La France Insoumise supports a rapid energy transition away from fossil fuels and nuclear power, prioritizing renewable energy sources as the foundation of their environmental strategy.",
+      "key_policies": [
+        "Rapid transition away from fossil fuels",
+        "Phase-out of nuclear power",
+        "Shift toward renewable energy sources"
+      ],
+      "supporting_quote": "on climate we support rapid transition away from fossil fuels and nuclear power toward renewables"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "La France Insoumise",
+      "position_summary": "La France Insoumise supports an open immigration policy and advocates for the legalization of undocumented migrants currently residing in France.",
+      "key_policies": [
+        "Support for open immigration",
+        "Regularisation of undocumented migrants"
+      ],
+      "supporting_quote": "We support open immigration and regularisation of undocumented migrants."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "La France Insoumise",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "La France Insoumise",
+      "position_summary": "LFI advocates for an independent French foreign policy with a critical stance toward NATO, while opposing EU austerity measures and seeking to renegotiate existing EU treaties.",
+      "key_policies": [
+        "Critical of NATO and pursuit of an independent French foreign policy",
+        "Opposition to EU austerity policies",
+        "Renegotiation of EU treaties"
+      ],
+      "supporting_quote": "We are critical of NATO and want an independent French foreign policy. We oppose EU austerity and want to renegotiate EU treaties."
+    }
+  },
+  "Parti Socialiste": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste advocates for a robust public sector funded through progressive taxation, emphasizing increased taxes on high earners while shielding the middle class from additional burden.",
+      "key_policies": [
+        "Raise taxes on wealthy individuals",
+        "Protect the middle class from tax increases",
+        "Invest in strong public services including healthcare, education, and transport"
+      ],
+      "supporting_quote": "We want to raise taxes on the wealthy while protecting the middle class."
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste supports a publicly funded healthcare system backed by significant government investment as part of a broader commitment to strong public services.",
+      "key_policies": [
+        "Investment in public healthcare",
+        "Strong welfare state to support healthcare provision",
+        "Robust public services including healthcare"
+      ],
+      "supporting_quote": "strong welfare state with investment in public healthcare"
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste supports transitioning to a green economy through investment in renewable energy, while ensuring protections for workers whose industries are affected by the transition.",
+      "key_policies": [
+        "Support for the green transition",
+        "Investment in renewable energy",
+        "Worker protection programmes for those in affected industries"
+      ],
+      "supporting_quote": "we support the green transition with investment in renewables while protecting workers in affected industries"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste supports a managed approach to immigration, coupled with strong programmes to facilitate the integration of immigrants into society.",
+      "key_policies": [
+        "Managed immigration system",
+        "Strong integration programmes for immigrants"
+      ],
+      "supporting_quote": "managed immigration with strong integration programmes"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste supports a strong public education system backed by government investment, viewing it as a core component of the welfare state.",
+      "key_policies": [
+        "Investment in public education",
+        "Strong public services including education",
+        "Welfare state support for education funding"
+      ],
+      "supporting_quote": "investment in public healthcare and education"
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Parti Socialiste",
+      "position_summary": "The Parti Socialiste supports continued EU membership and engagement in international cooperation, though the platform provides limited detail on specific foreign policy positions.",
+      "key_policies": [
+        "Support for EU membership",
+        "Commitment to international cooperation"
+      ],
+      "supporting_quote": "We support EU membership and international cooperation."
+    }
+  },
+  "Renaissance": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Renaissance",
+      "position_summary": "Renaissance supports a liberal market economy with an emphasis on innovation, investment, and international competitiveness, including labour market and pension reforms.",
+      "key_policies": [
+        "Liberal market economy with investment in innovation and technology",
+        "Reform of the pension system and labour market to improve competitiveness",
+        "Support for free trade and multilateral international institutions"
+      ],
+      "supporting_quote": "liberal market economy with investment in innovation and technology"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Renaissance",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Renaissance",
+      "position_summary": "Renaissance supports a mixed energy approach combining nuclear power with investment in renewable energy sources, framed within a broader commitment to innovation and a liberal market economy.",
+      "key_policies": [
+        "Support for nuclear power as part of the energy mix",
+        "Investment in renewable energy sources",
+        "Technology and innovation-driven approach to energy policy"
+      ],
+      "supporting_quote": "We support nuclear power alongside investment in renewables."
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Renaissance",
+      "position_summary": "Renaissance supports a balanced immigration approach that combines firm enforcement with humane treatment, emphasizing strong requirements for immigrants to integrate into French society.",
+      "key_policies": [
+        "Firm enforcement of immigration rules",
+        "Humane treatment of immigrants",
+        "Strong integration requirements for immigrants"
+      ],
+      "supporting_quote": "firm but humane approach with strong integration requirements"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Renaissance",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Renaissance",
+      "position_summary": "Renaissance is strongly pro-EU and advocates for deeper European integration, particularly on defence, while supporting free trade and multilateral international institutions.",
+      "key_policies": [
+        "Deeper European integration, especially on defence",
+        "Support for free trade agreements",
+        "Support for multilateral international institutions"
+      ],
+      "supporting_quote": "We are strongly pro-EU and support deeper European integration especially on defence."
+    }
+  },
+  "Les Républicains": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Les Républicains",
+      "position_summary": "Les Républicains advocates for a centre-right economic approach centred on tax reduction and cuts to public spending to drive growth, while preserving a basic social safety net. They also favour deregulation and free market principles for businesses.",
+      "key_policies": [
+        "Lower taxes to stimulate economic growth",
+        "Reduced public spending",
+        "Free markets with reduced regulation on businesses",
+        "Maintaining a social safety net for the most vulnerable"
+      ],
+      "supporting_quote": "lower taxes and reduced public spending to stimulate economic growth"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Les Républicains",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Les Républicains",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Les Républicains",
+      "position_summary": "Les Républicains advocates for strict immigration control with enhanced enforcement at France's borders. Their approach emphasizes limiting immigration through stronger security measures.",
+      "key_policies": [
+        "Strict control of immigration",
+        "Stronger border enforcement"
+      ],
+      "supporting_quote": "strict control of immigration with stronger border enforcement"
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Les Républicains",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Les Républicains",
+      "position_summary": "Les Républicains supports a strong French role within NATO and European defence structures, emphasizing France's active contribution to collective security.",
+      "key_policies": [
+        "Support for NATO membership and commitments",
+        "Strengthening France's role in European defence"
+      ],
+      "supporting_quote": "We support NATO and a strong French role in European defence."
+    }
+  },
+  "Europe Écologie Les Verts": {
+    "Economy & Taxation": {
+      "issue": "Economy & Taxation",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "EELV advocates for a green economic transformation driven by heavy carbon taxation, with revenues directed toward funding a sustainable transition while protecting workers and vulnerable populations. They also support reducing working hours as part of reshaping the economy around ecological priorities.",
+      "key_policies": [
+        "Introduce a heavy carbon tax to discourage fossil fuel use",
+        "Use carbon tax revenues to fund a green economic transition",
+        "Reduce working hours as part of economic transformation toward sustainability"
+      ],
+      "supporting_quote": "tax carbon heavily and use the revenue to fund a green transition that protects workers and the most vulnerable"
+    },
+    "Healthcare": {
+      "issue": "Healthcare",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "Climate & Environment": {
+      "issue": "Climate & Environment",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "EELV places climate and ecology at the core of all policy, advocating for a full transition away from nuclear power toward renewables and strong carbon pricing measures. They support using carbon tax revenues to fund a green economic transition that protects workers and vulnerable populations.",
+      "key_policies": [
+        "Phase out nuclear power and transition entirely to renewable energy by 2040",
+        "Implement a heavy carbon tax with revenues directed toward a green transition",
+        "Support strong EU integration focused on climate policy"
+      ],
+      "supporting_quote": "tax carbon heavily and use the revenue to fund a green transition that protects workers and the most vulnerable"
+    },
+    "Immigration": {
+      "issue": "Immigration",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "EELV supports an open and welcoming approach to immigration in France.",
+      "key_policies": [
+        "Open immigration policy",
+        "Welcoming stance toward immigrants"
+      ],
+      "supporting_quote": "We support open and welcoming immigration policy."
+    },
+    "Education": {
+      "issue": "Education",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "No position found in platform text",
+      "key_policies": [],
+      "supporting_quote": ""
+    },
+    "EU & Foreign Policy": {
+      "issue": "EU & Foreign Policy",
+      "party": "Europe Écologie Les Verts",
+      "position_summary": "EELV supports deeper European Union integration, with a particular focus on coordinated EU-level action on climate and ecological policy.",
+      "key_policies": [
+        "Support for strong EU integration",
+        "Prioritising EU-level climate policy coordination",
+        "Placing ecology at the centre of all policy, including foreign and EU affairs"
+      ],
+      "supporting_quote": "We support strong EU integration especially on climate policy."
+    }
+  }
+}
