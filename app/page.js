@@ -4,6 +4,27 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+/* ---------- Icons ---------- */
+const Icon = {
+  globe: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>,
+  vote: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="9" width="18" height="12" rx="1.5"/><path d="M7 9V6a5 5 0 0 1 10 0v3"/><path d="M9 14l2 2 4-4"/></svg>,
+  arrowRight: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>,
+  check: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>,
+  sun: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>,
+  moon: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>,
+  close: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  chart: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18M7 16l4-4 3 3 5-6"/></svg>,
+  users: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.7"/><path d="M16.5 14.2c2.6.6 4.5 2.6 4.5 5.3"/></svg>,
+  money: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.4-1.2 2-2.5 2.5S9.5 13 9.5 14.5a2.5 2.5 0 0 0 5 0"/><path d="M12 7v1.2M12 15.8V17"/></svg>,
+  heart: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.8 8.6c0 4.3-8.8 10.5-8.8 10.5S3.2 12.9 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3z"/></svg>,
+  leaf: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 21c8-1 13-7 13-15-8 0-13 5-13 13 0 1 0 1.5.4 2z"/><path d="M5 21c.5-3 2.5-7 6-9.5"/></svg>,
+  book: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg>,
+  flag: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/></svg>,
+  news: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="14" height="16" rx="1.5"/><path d="M7 8h6M7 12h6M7 16h3"/><path d="M17 8h2.5A1.5 1.5 0 0 1 21 9.5V18a2 2 0 0 1-2 2h0"/></svg>,
+  link: (s = 11) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M10 14a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1 1"/><path d="M14 10a5 5 0 0 0-7.1 0l-2 2a5 5 0 0 0 7.1 7.1l1-1"/></svg>,
+  warn: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>,
+};
+
 const COUNTRIES = {
   "Sweden": {
     flag: "🇸🇪", years: ["2026"], electionDate: "13 September 2026",
@@ -56,12 +77,12 @@ const COUNTRIES = {
 };
 
 const ISSUES = [
-  { key: "Economy & Taxation", icon: "💰" },
-  { key: "Healthcare", icon: "🏥" },
-  { key: "Climate & Environment", icon: "🌱" },
-  { key: "Immigration", icon: "🌍" },
-  { key: "Education", icon: "📚" },
-  { key: "EU & Foreign Policy", icon: "🇪🇺" }
+  { key: "Economy & Taxation", icon: "money" },
+  { key: "Healthcare", icon: "heart" },
+  { key: "Climate & Environment", icon: "leaf" },
+  { key: "Immigration", icon: "globe" },
+  { key: "Education", icon: "book" },
+  { key: "EU & Foreign Policy", icon: "flag" }
 ];
 
 const PARTIES = {
@@ -150,6 +171,8 @@ function computeMatch(answers, countryParties) {
     .map(([party, score]) => ({ party, score, pct: Math.round((score / QUIZ_QUESTIONS.length) * 100) }));
 }
 
+/* ---------- Shared components ---------- */
+
 function Avatar({ party, size = 34 }) {
   const p = PARTIES[party] || { color: "#888", short: "?" };
   return (
@@ -162,7 +185,7 @@ function Avatar({ party, size = 34 }) {
 function PartyPill({ party, active, onClick }) {
   const p = PARTIES[party] || { color: "#888", short: "?" };
   return (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 12px 5px 5px", borderRadius: 99, cursor: "pointer", border: `1.5px solid ${active ? p.color : "var(--border)"}`, background: active ? p.color + "18" : "transparent", color: active ? "var(--text-primary)" : "var(--text-muted)", fontSize: 13, fontWeight: 500, transition: "all 0.15s" }}>
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px 6px 6px", borderRadius: 99, cursor: "pointer", border: `1.5px solid ${active ? p.color : "var(--border)"}`, background: active ? p.color + "16" : "transparent", color: active ? "var(--text-primary)" : "var(--text-muted)", fontSize: 13, fontWeight: 500, transition: "all 0.18s ease" }}>
       <div style={{ width: 22, height: 22, borderRadius: "50%", background: active ? p.color : "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "white", fontWeight: 700 }}>{p.short}</div>
       {party}
     </button>
@@ -171,14 +194,13 @@ function PartyPill({ party, active, onClick }) {
 
 function IssuePill({ issue, active, onClick }) {
   return (
-    <button onClick={onClick} style={{ padding: "5px 14px", borderRadius: 99, fontSize: 13, cursor: "pointer", fontWeight: 500, border: `1.5px solid ${active ? "var(--text-primary)" : "var(--border)"}`, background: active ? "var(--text-primary)" : "transparent", color: active ? "var(--bg)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}>
-      <span>{issue.icon}</span>{issue.key}
+    <button onClick={onClick} style={{ padding: "7px 16px", borderRadius: 99, fontSize: 13, cursor: "pointer", fontWeight: 500, border: `1.5px solid ${active ? "var(--text-primary)" : "var(--border)"}`, background: active ? "var(--text-primary)" : "transparent", color: active ? "var(--bg)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 7, transition: "all 0.18s ease" }}>
+      {issue.icon ? Icon[issue.icon](14) : null}{issue.key}
     </button>
   );
 }
 
-function QuizModal({ onComplete, onSkip }) {
-  const [started, setStarted] = useState(false);
+function QuizModal({ onComplete, onClose }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
 
@@ -193,40 +215,25 @@ function QuizModal({ onComplete, onSkip }) {
   const progress = (step / QUIZ_QUESTIONS.length) * 100;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-      <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: "2rem", maxWidth: 520, width: "100%", border: "1px solid var(--border)" }}>
-        {!started ? (
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 40, marginBottom: "1rem" }}>🗳️</div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: "0 0 1rem", lineHeight: 1.3 }}>Find your political match</h2>
-            <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.7, margin: "0 0 0.75rem" }}>Answer 6 quick questions on the issues that matter most — economy, climate, immigration and more.</p>
-            <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.7, margin: "0 0 2rem" }}>We'll match you to the party whose positions align closest with your views, so you can explore their full platform in the comparator.</p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <button onClick={() => setStarted(true)} style={{ padding: "11px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14, background: "var(--text-primary)", color: "var(--bg)", border: "none", cursor: "pointer" }}>Take the quiz →</button>
-              <button onClick={onSkip} style={{ padding: "11px 24px", borderRadius: 10, fontWeight: 600, fontSize: 14, background: "transparent", color: "var(--text-muted)", border: "1.5px solid var(--border)", cursor: "pointer" }}>Skip for now</button>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Question {step + 1} of {QUIZ_QUESTIONS.length}</span>
-              <button onClick={onSkip} style={{ background: "none", border: "none", fontSize: 13, color: "var(--text-muted)", cursor: "pointer", padding: 0 }}>Skip →</button>
-            </div>
-            <div style={{ height: 3, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.5rem" }}>
-              <div style={{ height: "100%", borderRadius: 99, background: "var(--text-primary)", width: `${progress}%`, transition: "width 0.3s" }} />
-            </div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", marginBottom: "1.5rem", lineHeight: 1.3 }}>{q.question}</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {q.options.map(opt => (
-                <button key={opt.value} onClick={() => handleAnswer(q.id, opt.value)}
-                  style={{ padding: "14px 16px", borderRadius: 12, cursor: "pointer", border: "1.5px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)", fontSize: 14, textAlign: "left", fontWeight: 500, transition: "all 0.15s", lineHeight: 1.4 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--text-primary)"; e.currentTarget.style.background = "var(--bg-muted)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg)"; }}
-                >{opt.label}</button>
-              ))}
-            </div>
-          </div>
-        )}
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 24, padding: "2.25rem", maxWidth: 540, width: "100%", border: "1px solid var(--border)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.07em", textTransform: "uppercase" }}>Question {step + 1} of {QUIZ_QUESTIONS.length}</span>
+          <button onClick={onClose} aria-label="Close quiz" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", borderRadius: 8 }}>{Icon.close(18)}</button>
+        </div>
+        <div style={{ height: 4, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.75rem", overflow: "hidden" }}>
+          <div style={{ height: "100%", borderRadius: 99, background: "var(--accent)", width: `${progress}%`, transition: "width 0.35s ease" }} />
+        </div>
+        <h2 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", marginBottom: "1.5rem", lineHeight: 1.35 }}>{q.question}</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {q.options.map(opt => (
+            <button key={opt.value} onClick={() => handleAnswer(q.id, opt.value)}
+              style={{ padding: "15px 18px", borderRadius: 14, cursor: "pointer", border: "1.5px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)", fontSize: 14, textAlign: "left", fontWeight: 500, transition: "all 0.18s ease", lineHeight: 1.45 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.background = "var(--bg-muted)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg)"; }}
+            >{opt.label}</button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -237,25 +244,25 @@ function MatchBanner({ matches, onDismiss }) {
   const top = matches[0];
   const p = PARTIES[top.party] || { color: "#888" };
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "2rem", borderLeft: `4px solid ${p.color}` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem", borderLeft: `4px solid ${p.color}`, animation: "slideIn 0.4s ease-out" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 8px" }}>Your political match</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-            <Avatar party={top.party} size={40} />
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 10px" }}>Your political match</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+            <Avatar party={top.party} size={42} />
             <div>
-              <p style={{ fontWeight: 700, fontSize: 16, color: "var(--text-primary)", margin: 0 }}>{top.party}</p>
+              <p style={{ fontWeight: 700, fontSize: 17, color: "var(--text-primary)", margin: 0 }}>{top.party}</p>
               <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{top.pct}% alignment with your answers</p>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {matches.slice(1).map(m => {
               const mp = PARTIES[m.party] || { color: "#888" };
-              return <div key={m.party} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "4px 10px", borderRadius: 99, border: "1px solid var(--border)" }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: mp.color }} />{m.party} · {m.pct}%</div>;
+              return <div key={m.party} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "5px 12px", borderRadius: 99, border: "1px solid var(--border)" }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: mp.color }} />{m.party} · {m.pct}%</div>;
             })}
           </div>
         </div>
-        <button onClick={onDismiss} style={{ background: "none", border: "none", fontSize: 18, color: "var(--text-muted)", cursor: "pointer", padding: 0 }}>×</button>
+        <button onClick={onDismiss} aria-label="Dismiss" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex", borderRadius: 8 }}>{Icon.close(16)}</button>
       </div>
     </div>
   );
@@ -263,24 +270,24 @@ function MatchBanner({ matches, onDismiss }) {
 
 function SpectrumBar({ parties }) {
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "2rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-        {["← Left", "Centre", "Right →"].map(l => <span key={l} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>{l}</span>)}
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+        {["Left", "Centre", "Right"].map(l => <span key={l} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>{l}</span>)}
       </div>
-      <div style={{ position: "relative", height: 4, borderRadius: 99, background: "linear-gradient(to right, #cc3333, #cccccc, #3366cc)", marginBottom: 28 }}>
-        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 1, height: 12, background: "var(--border)" }} />
+      <div style={{ position: "relative", height: 4, borderRadius: 99, background: "linear-gradient(to right, #cc3333, var(--border), #3366cc)", marginBottom: 32 }}>
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 1, height: 14, background: "var(--text-faint)" }} />
         {parties.map(party => {
           const p = PARTIES[party];
           if (!p) return null;
           return (
             <div key={party} style={{ position: "absolute", left: `${p.spectrum}%`, top: "50%", transform: "translate(-50%,-50%)" }}>
-              <div style={{ width: 16, height: 16, borderRadius: "50%", background: p.color, border: "2px solid var(--bg-card)" }} />
-              <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", fontSize: 9, fontWeight: 700, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{p.short}</div>
+              <div style={{ width: 16, height: 16, borderRadius: "50%", background: p.color, border: "3px solid var(--bg-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
+              <div style={{ position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{p.short}</div>
             </div>
           );
         })}
       </div>
-      <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0 }}>Party colours are official — not spectrum indicators. Positions are approximate.</p>
+      <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0 }}>Marker colours are official party colours, not spectrum indicators. Positions are approximate.</p>
     </div>
   );
 }
@@ -288,25 +295,25 @@ function SpectrumBar({ parties }) {
 function PartyLeaderCards({ parties }) {
   return (
     <div style={{ marginBottom: "2rem" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 14 }}>
         {parties.map(party => {
           const p = PARTIES[party];
           if (!p) return null;
           return (
-            <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+            <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
               <div style={{ height: 3, background: p.color }} />
-              <div style={{ padding: "14px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <Avatar party={party} size={36} />
+              <div style={{ padding: "16px 18px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
+                  <Avatar party={party} size={38} />
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", margin: 0 }}>{p.leader}</p>
+                    <p style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text-primary)", margin: 0 }}>{p.leader}</p>
                     <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{party}</p>
                   </div>
                 </div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: p.color, margin: "0 0 4px" }}>{p.leaderTitle}</p>
-                <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 8px" }}>{p.leaderBio}</p>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, margin: 0, borderTop: "1px solid var(--border)", paddingTop: 8, fontStyle: "italic" }}>{p.partyBio}</p>
-                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 10, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 8, width: "100%" }}>↗ Official website</a>}
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: p.color, margin: "0 0 6px" }}>{p.leaderTitle}</p>
+                <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 10px" }}>{p.leaderBio}</p>
+                <p style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.55, margin: 0, borderTop: "1px solid var(--border)", paddingTop: 10, fontStyle: "italic" }}>{p.partyBio}</p>
+                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 10, width: "100%" }}>{Icon.link()} Official website</a>}
               </div>
             </div>
           );
@@ -320,10 +327,10 @@ function GeopoliticsCard({ country }) {
   const c = COUNTRIES[country];
   if (!c?.geopolitics) return null;
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "2rem", borderLeft: "4px solid var(--text-primary)" }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 8px" }}>🌐 Why this election matters</p>
-      <p style={{ fontSize: 14, color: "var(--text-primary)", lineHeight: 1.7, margin: 0 }}>{c.geopolitics}</p>
-      {c.electionDate && <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "10px 0 0" }}>📅 Election date: {c.electionDate}</p>}
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem", borderLeft: "4px solid var(--accent)" }}>
+      <p style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 10px" }}>{Icon.globe(13)} Why this election matters</p>
+      <p style={{ fontSize: 14.5, color: "var(--text-primary)", lineHeight: 1.75, margin: 0 }}>{c.geopolitics}</p>
+      {c.electionDate && <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "12px 0 0" }}>Election date: {c.electionDate}</p>}
     </div>
   );
 }
@@ -349,31 +356,29 @@ function NewsFeed({ country }) {
   }, [country]);
 
   return (
-    <div style={{ marginTop: "2.5rem", borderTop: "1px solid var(--border)", paddingTop: "2rem" }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", margin: "0 0 1rem" }}>
-        📰 Latest news — {c?.flag} {country}
+    <div style={{ marginTop: "3rem", borderTop: "1px solid var(--border)", paddingTop: "2.25rem" }}>
+      <h3 style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", margin: "0 0 1.25rem" }}>
+        {Icon.news(18)} Latest news — {c?.flag} {country}
       </h3>
-      {loading && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Loading news...</p>}
+      {loading && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Loading news…</p>}
       {error && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{error}</p>}
       {!loading && !error && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
           {articles.map((a, i) => (
-            <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden", display: "block", transition: "border-color 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--text-primary)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}>
+            <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", display: "block", transition: "border-color 0.18s, transform 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}>
               {a.urlToImage && <img src={a.urlToImage} alt="" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
-              <div style={{ padding: "12px 14px" }}>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 6px", fontWeight: 600 }}>{a.source?.name}</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px", lineHeight: 1.4, letterSpacing: "-0.01em" }}>{a.title}</p>
+              <div style={{ padding: "14px 16px" }}>
+                <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: "0 0 7px", fontWeight: 600 }}>{a.source?.name}</p>
+                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 7px", lineHeight: 1.45, letterSpacing: "-0.01em" }}>{a.title}</p>
                 <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{new Date(a.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
               </div>
             </a>
           ))}
         </div>
       )}
-      {!loading && !error && articles.length === 0 && (
-        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No recent news found for this election.</p>
-      )}
+      {!loading && !error && articles.length === 0 && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No recent news found for this election.</p>}
     </div>
   );
 }
@@ -401,103 +406,76 @@ function StatCounter({ end, label, duration = 2000 }) {
 
   return (
     <div ref={ref} style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 48, fontWeight: 800, letterSpacing: "-0.04em", color: "white", lineHeight: 1 }}>{count.toLocaleString()}</div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontWeight: 500, letterSpacing: "0.02em" }}>{label}</div>
+      <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text-primary)", lineHeight: 1 }}>{count.toLocaleString()}</div>
+      <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 8, fontWeight: 500, letterSpacing: "0.01em", lineHeight: 1.3 }}>{label}</div>
     </div>
   );
 }
 
 function WorldMap({ onSelectCountry, selectedCountry }) {
-  const [hoveredCountry, setHoveredCountry] = useState(null);
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, country: null });
-
   const activeCountries = Object.keys(COUNTRIES);
   const countryNameMap = { "United States of America": "United States" };
 
   return (
-    <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: "3rem" }}>
-      <div style={{ padding: "1.5rem 1.5rem 0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ position: "relative", background: "var(--bg-card)", borderRadius: 24, border: "1px solid var(--border)", overflow: "hidden" }}>
+      <div style={{ padding: "1.75rem 1.75rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", margin: "0 0 4px" }}>Interactive map</p>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", margin: 0 }}>Click a highlighted country to explore its election</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 6px" }}>Interactive map</p>
+          <p style={{ fontSize: 14.5, color: "var(--text-secondary)", margin: 0 }}>Click a highlighted country below to load its election</p>
         </div>
-        <div style={{ display: "flex", gap: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {activeCountries.map(name => {
             const c = COUNTRIES[name];
+            const sel = selectedCountry === name;
             return (
               <button key={name} onClick={() => onSelectCountry(name)}
-                style={{ background: selectedCountry === name ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)", border: `1px solid ${selectedCountry === name ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", gap: 5 }}>
-                {c.flag} {name}
+                style={{ background: sel ? "var(--accent-soft)" : "var(--bg-muted)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 99, padding: "6px 13px", cursor: "pointer", fontSize: 12.5, color: sel ? "var(--accent)" : "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6, transition: "all 0.18s ease", fontWeight: sel ? 600 : 500 }}>
+                <span aria-hidden="true">{c.flag}</span> {name}
               </button>
             );
           })}
         </div>
       </div>
 
-      <ComposableMap projectionConfig={{ scale: 160, center: [10, 10] }} style={{ width: "100%", height: 520 }}>
+      <ComposableMap projectionConfig={{ scale: 165, center: [10, 10] }} style={{ width: "100%", height: 540 }}>
         <Geographies geography={GEO_URL}>
           {({ geographies }) => geographies.map(geo => {
-            const countryName = geo.properties.name;
-            const mappedName = countryNameMap[countryName] || countryName;
+            const rawName = geo.properties.name;
+            const mappedName = countryNameMap[rawName] || rawName;
             const isActive = activeCountries.includes(mappedName);
             const isSelected = selectedCountry === mappedName;
-            const isHovered = hoveredCountry === mappedName;
             return (
               <Geography key={geo.rsmKey} geography={geo}
                 onClick={() => isActive && onSelectCountry(mappedName)}
-                onMouseEnter={e => {
-                  if (isActive) {
-                    setHoveredCountry(mappedName);
-                    setTooltip({ visible: true, x: e.clientX, y: e.clientY, country: mappedName });
-                  }
-                }}
+                onMouseEnter={e => { if (isActive) setTooltip({ visible: true, x: e.clientX, y: e.clientY, country: mappedName }); }}
                 onMouseMove={e => { if (isActive) setTooltip(t => ({ ...t, x: e.clientX, y: e.clientY })); }}
-                onMouseLeave={() => { setHoveredCountry(null); setTooltip({ visible: false, x: 0, y: 0, country: null }); }}
+                onMouseLeave={() => setTooltip({ visible: false, x: 0, y: 0, country: null })}
                 style={{
-                  default: {
-                    fill: isSelected ? "#fff"
-                      : isActive ? "rgba(255,255,255,0.65)"
-                      : "rgba(255,255,255,0.06)",
-                    stroke: "rgba(255,255,255,0.1)",
-                    strokeWidth: 0.5,
-                    outline: "none",
-                    cursor: isActive ? "pointer" : "default",
-                    transition: "fill 0.2s"
-                  },
-                  hover: {
-                    fill: isActive ? (isSelected ? "#fff" : "rgba(255,255,255,0.65)")
-                      : "rgba(255,255,255,0.06)",
-                    stroke: "rgba(255,255,255,0.1)",
-                    strokeWidth: 0.5,
-                    outline: "none"
-                  },
-                  pressed: {
-                    fill: isActive ? "#fff" : "rgba(255,255,255,0.06)",
-                    outline: "none"
-                  }
+                  default: { fill: isSelected ? "var(--accent)" : isActive ? "var(--text-faint)" : "var(--border-light)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none", cursor: isActive ? "pointer" : "default", transition: "fill 0.2s" },
+                  hover: { fill: isActive ? (isSelected ? "var(--accent)" : "var(--text-muted)") : "var(--border-light)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none" },
+                  pressed: { fill: isActive ? "var(--accent)" : "var(--border-light)", outline: "none" }
                 }}
               />
             );
           })}
         </Geographies>
 
-        {/* Pulse markers on active countries */}
         {activeCountries.map(name => {
           const c = COUNTRIES[name];
           if (!c.coordinates) return null;
           const isSelected = selectedCountry === name;
           return (
             <Marker key={name} coordinates={c.coordinates} onClick={() => onSelectCountry(name)}>
-              <circle r={isSelected ? 8 : 5} fill={isSelected ? "#fff" : "rgba(255,255,255,0.8)"} stroke={isSelected ? "rgba(255,255,255,0.3)" : "transparent"} strokeWidth={isSelected ? 6 : 0} style={{ cursor: "pointer" }} />
-              {isSelected && <circle r={14} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} />}
+              <circle r={isSelected ? 8 : 5} fill={isSelected ? "var(--accent)" : "var(--text-secondary)"} stroke={isSelected ? "var(--accent-soft)" : "transparent"} strokeWidth={isSelected ? 6 : 0} style={{ cursor: "pointer" }} />
+              {isSelected && <circle r={14} fill="none" stroke="var(--accent)" strokeOpacity={0.35} strokeWidth={1.5} />}
             </Marker>
           );
         })}
       </ComposableMap>
 
-      {/* Tooltip */}
       {tooltip.visible && tooltip.country && (
-        <div style={{ position: "fixed", left: tooltip.x + 12, top: tooltip.y - 40, background: "rgba(0,0,0,0.9)", color: "white", padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, pointerEvents: "none", zIndex: 999, border: "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap" }}>
+        <div style={{ position: "fixed", left: tooltip.x + 14, top: tooltip.y - 42, background: "var(--text-primary)", color: "var(--bg)", padding: "7px 13px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, pointerEvents: "none", zIndex: 999, whiteSpace: "nowrap" }}>
           {COUNTRIES[tooltip.country]?.flag} {tooltip.country} · {COUNTRIES[tooltip.country]?.electionDate}
         </div>
       )}
@@ -534,183 +512,184 @@ function ComparisonView({ data, country, year, matchResults }) {
   const issuesToShow = selectedIssue ? [ISSUES.find(i => i.key === selectedIssue)] : ISSUES;
 
   return (
-    <div>
-      <div style={{ maxWidth: 1300, margin: "0 auto", padding: "2.5rem 2rem 4rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem", flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, fontWeight: 500 }}>{COUNTRIES[country]?.flag} {country} · {year} election</p>
-            <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>Party positions</h2>
+    <div style={{ maxWidth: 1300, margin: "0 auto", padding: "3rem 2rem 4rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: 14 }}>
+        <div>
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{COUNTRIES[country]?.flag} {country} · {year} election</p>
+          <h2 style={{ fontSize: 25, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>Party positions</h2>
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{parties.length} parties · {ISSUES.length} issues</div>
+      </div>
+
+      {matchResults && showMatch && <MatchBanner matches={matchResults} onDismiss={() => setShowMatch(false)} />}
+      <GeopoliticsCard country={country} />
+      <SpectrumBar parties={parties} />
+
+      <div style={{ display: "flex", gap: 6, marginBottom: "2rem", borderBottom: "1px solid var(--border)" }}>
+        {[{ id: "positions", label: "Positions", icon: "chart" }, { id: "leaders", label: "Leaders & parties", icon: "users" }].map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: activeTab === tab.id ? "var(--text-primary)" : "var(--text-muted)", borderBottom: `2px solid ${activeTab === tab.id ? "var(--accent)" : "transparent"}`, marginBottom: -1, transition: "all 0.18s ease" }}>{Icon[tab.icon](15)}{tab.label}</button>
+        ))}
+      </div>
+
+      {activeTab === "leaders" && <PartyLeaderCards parties={allParties} />}
+
+      {activeTab === "positions" && (
+        <>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>Parties</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {allParties.map(party => <PartyPill key={party} party={party} active={!selectedParties || selectedParties.includes(party)} onClick={() => toggleParty(party)} />)}
+            </div>
           </div>
-          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{parties.length} parties · {ISSUES.length} issues</div>
-        </div>
-
-        {matchResults && showMatch && <MatchBanner matches={matchResults} onDismiss={() => setShowMatch(false)} />}
-        <GeopoliticsCard country={country} />
-        <SpectrumBar parties={parties} />
-
-        <div style={{ display: "flex", gap: 4, marginBottom: "1.75rem", borderBottom: "1px solid var(--border)" }}>
-          {[{ id: "positions", label: "📊 Positions" }, { id: "leaders", label: "👤 Leaders & parties" }].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "8px 16px", background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: activeTab === tab.id ? "var(--text-primary)" : "var(--text-muted)", borderBottom: `2px solid ${activeTab === tab.id ? "var(--text-primary)" : "transparent"}`, marginBottom: -1, transition: "all 0.15s" }}>{tab.label}</button>
-          ))}
-        </div>
-
-        {activeTab === "leaders" && <PartyLeaderCards parties={allParties} />}
-
-        {activeTab === "positions" && (
-          <>
-            <div style={{ marginBottom: "1.25rem" }}>
-              <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Parties</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {allParties.map(party => <PartyPill key={party} party={party} active={!selectedParties || selectedParties.includes(party)} onClick={() => toggleParty(party)} />)}
-              </div>
+          <div style={{ marginBottom: "2.5rem" }}>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>Issue</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <IssuePill issue={{ key: "All issues", icon: "vote" }} active={!selectedIssue} onClick={() => setSelectedIssue(null)} />
+              {ISSUES.map(issue => <IssuePill key={issue.key} issue={issue} active={selectedIssue === issue.key} onClick={() => setSelectedIssue(issue.key === selectedIssue ? null : issue.key)} />)}
             </div>
-            <div style={{ marginBottom: "2.5rem" }}>
-              <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Issue</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                <IssuePill issue={{ key: "All issues", icon: "🗳️" }} active={!selectedIssue} onClick={() => setSelectedIssue(null)} />
-                {ISSUES.map(issue => <IssuePill key={issue.key} issue={issue} active={selectedIssue === issue.key} onClick={() => setSelectedIssue(issue.key === selectedIssue ? null : issue.key)} />)}
-              </div>
-            </div>
+          </div>
 
-            {selectedIssue && (() => {
-              const issue = ISSUES.find(i => i.key === selectedIssue);
-              return (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.5rem" }}>
-                    <span style={{ fontSize: 28 }}>{issue.icon}</span>
-                    <div>
-                      <h3 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>{issue.key}</h3>
-                      <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>Where each party stands</p>
-                    </div>
+          {selectedIssue && (() => {
+            const issue = ISSUES.find(i => i.key === selectedIssue);
+            return (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.75rem" }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>{Icon[issue.icon](20)}</div>
+                  <div>
+                    <h3 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>{issue.key}</h3>
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Where each party stands</p>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(265px, 1fr))", gap: 16 }}>
+                  {parties.map(party => {
+                    const p = PARTIES[party] || { color: "#888" };
+                    const pos = data[party]?.[selectedIssue];
+                    const noData = !pos || pos.position_summary === "No position found in platform text";
+                    const expanded = !!expandedCells[`${party}__${selectedIssue}`];
+                    return (
+                      <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
+                        <div style={{ height: 4, background: p.color }} />
+                        <div style={{ padding: "18px 20px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 15 }}>
+                            <Avatar party={party} size={40} />
+                            <div>
+                              <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--text-primary)", display: "block" }}>{party}</span>
+                              <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{p.leader}</span>
+                            </div>
+                          </div>
+                          {noData ? <p style={{ fontSize: 13, color: "var(--text-faint)", fontStyle: "italic" }}>No official position found in platform</p> : (
+                            <>
+                              {pos.key_policies?.length > 0 && (
+                                <ul style={{ margin: "0 0 11px", paddingLeft: 0, listStyle: "none" }}>
+                                  {pos.key_policies.map((pol, i) => (
+                                    <li key={i} style={{ fontSize: 13.5, color: "var(--text-primary)", lineHeight: 1.6, padding: "6px 0", display: "flex", gap: 9, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
+                                      <span style={{ color: p.color, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>›</span>{pol}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              <button onClick={() => toggleCell(party, selectedIssue)} style={{ fontSize: 12.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
+                                {expanded ? "Hide summary" : "Show summary"}
+                              </button>
+                              {expanded && <p style={{ margin: "11px 0 0", fontSize: 13.5, lineHeight: 1.7, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 13 }}>{pos.position_summary}</p>}
+                              {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 11, width: "100%" }}>{Icon.link()} Official party website</a>}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {!selectedIssue && (
+            <div style={{ overflowX: "auto", borderRadius: 16, border: "1px solid var(--border)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", background: "var(--bg-card)", minWidth: 700 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                    <th style={{ padding: "16px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", background: "var(--thead-bg)", width: 165, position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid var(--border)" }}>Issue</th>
                     {parties.map(party => {
                       const p = PARTIES[party] || { color: "#888" };
-                      const pos = data[party]?.[selectedIssue];
-                      const noData = !pos || pos.position_summary === "No position found in platform text";
-                      const expanded = !!expandedCells[`${party}__${selectedIssue}`];
                       return (
-                        <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-                          <div style={{ height: 4, background: p.color }} />
-                          <div style={{ padding: "16px 18px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                              <Avatar party={party} size={38} />
+                        <th key={party} style={{ padding: "16px 18px", textAlign: "center", background: "var(--thead-bg)", minWidth: 175, borderRight: "1px solid var(--border-light)" }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                            <Avatar party={party} size={32} />
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "-0.01em", lineHeight: 1.35 }}>{party}</span>
+                            <span style={{ fontSize: 10.5, color: "var(--text-muted)" }}>{p.leader}</span>
+                            <div style={{ width: 26, height: 2.5, background: p.color, borderRadius: 99 }} />
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {issuesToShow.map(({ key, icon }, rowIdx) => (
+                    <tr key={key} style={{ borderBottom: rowIdx < issuesToShow.length - 1 ? "1px solid var(--border-light)" : "none", background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)" }}>
+                      <td style={{ padding: "18px 20px", verticalAlign: "top", position: "sticky", left: 0, zIndex: 1, background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)", borderRight: "1px solid var(--border)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--text-primary)" }}>
+                          {Icon[icon](16)}
+                          <span style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em" }}>{key}</span>
+                        </div>
+                      </td>
+                      {parties.map(party => {
+                        const p = PARTIES[party] || { color: "#888" };
+                        const pos = data[party]?.[key];
+                        const noData = !pos || pos.position_summary === "No position found in platform text";
+                        const expanded = !!expandedCells[`${party}__${key}`];
+                        return (
+                          <td key={party} style={{ padding: "16px 18px", verticalAlign: "top", borderRight: "1px solid var(--border-light)" }}>
+                            {noData ? <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)" }}>—</span> : (
                               <div>
-                                <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)", display: "block" }}>{party}</span>
-                                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{p.leader}</span>
-                              </div>
-                            </div>
-                            {noData ? <p style={{ fontSize: 13, color: "var(--text-faint)", fontStyle: "italic" }}>No official position found in platform</p> : (
-                              <>
                                 {pos.key_policies?.length > 0 && (
-                                  <ul style={{ margin: "0 0 10px", paddingLeft: 0, listStyle: "none" }}>
+                                  <ul style={{ margin: "0 0 7px", paddingLeft: 0, listStyle: "none" }}>
                                     {pos.key_policies.map((pol, i) => (
-                                      <li key={i} style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.55, padding: "5px 0", display: "flex", gap: 8, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
+                                      <li key={i} style={{ fontSize: 12.5, color: "var(--text-primary)", lineHeight: 1.6, padding: "3px 0", display: "flex", gap: 7, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
                                         <span style={{ color: p.color, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>›</span>{pol}
                                       </li>
                                     ))}
                                   </ul>
                                 )}
-                                <button onClick={() => toggleCell(party, selectedIssue)} style={{ fontSize: 12, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
-                                  {expanded ? "Hide summary ▲" : "Show summary ▼"}
+                                <button onClick={() => toggleCell(party, key)} style={{ marginTop: 5, fontSize: 11.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
+                                  {expanded ? "Hide summary" : "Show summary"}
                                 </button>
-                                {expanded && <p style={{ margin: "10px 0 0", fontSize: 13, lineHeight: 1.65, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 12 }}>{pos.position_summary}</p>}
-                                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 10, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 10, width: "100%" }}>↗ Official party website</a>}
-                              </>
+                                {expanded && <p style={{ margin: "9px 0 0", fontSize: 12.5, lineHeight: 1.7, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 11 }}>{pos.position_summary}</p>}
+                                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontSize: 10.5, color: "var(--text-faint)", textDecoration: "none" }}>{Icon.link(10)} Official source</a>}
+                              </div>
                             )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {!selectedIssue && (
-              <div style={{ overflowX: "auto", borderRadius: 14, border: "1px solid var(--border)" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", background: "var(--bg-card)", minWidth: 700 }}>
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      <th style={{ padding: "14px 18px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", background: "var(--thead-bg)", width: 160, position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid var(--border)" }}>Issue</th>
-                      {parties.map(party => {
-                        const p = PARTIES[party] || { color: "#888" };
-                        return (
-                          <th key={party} style={{ padding: "14px 16px", textAlign: "center", background: "var(--thead-bg)", minWidth: 170, borderRight: "1px solid var(--border-light)" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                              <Avatar party={party} size={30} />
-                              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>{party}</span>
-                              <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{p.leader}</span>
-                              <div style={{ width: 24, height: 2, background: p.color, borderRadius: 99 }} />
-                            </div>
-                          </th>
+                          </td>
                         );
                       })}
                     </tr>
-                  </thead>
-                  <tbody>
-                    {issuesToShow.map(({ key, icon }, rowIdx) => (
-                      <tr key={key} style={{ borderBottom: rowIdx < issuesToShow.length - 1 ? "1px solid var(--border-light)" : "none", background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)" }}>
-                        <td style={{ padding: "16px 18px", verticalAlign: "top", position: "sticky", left: 0, zIndex: 1, background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)", borderRight: "1px solid var(--border)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 16 }}>{icon}</span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>{key}</span>
-                          </div>
-                        </td>
-                        {parties.map(party => {
-                          const p = PARTIES[party] || { color: "#888" };
-                          const pos = data[party]?.[key];
-                          const noData = !pos || pos.position_summary === "No position found in platform text";
-                          const expanded = !!expandedCells[`${party}__${key}`];
-                          return (
-                            <td key={party} style={{ padding: "14px 16px", verticalAlign: "top", borderRight: "1px solid var(--border-light)" }}>
-                              {noData ? <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)" }}>—</span> : (
-                                <div>
-                                  {pos.key_policies?.length > 0 && (
-                                    <ul style={{ margin: "0 0 6px", paddingLeft: 0, listStyle: "none" }}>
-                                      {pos.key_policies.map((pol, i) => (
-                                        <li key={i} style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.55, padding: "3px 0", display: "flex", gap: 6, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
-                                          <span style={{ color: p.color, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>›</span>{pol}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                  <button onClick={() => toggleCell(party, key)} style={{ marginTop: 4, fontSize: 11, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
-                                    {expanded ? "Hide summary ▲" : "Show summary ▼"}
-                                  </button>
-                                  {expanded && <p style={{ margin: "8px 0 0", fontSize: 12, lineHeight: 1.65, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 10 }}>{pos.position_summary}</p>}
-                                  {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 8, fontSize: 10, color: "var(--text-faint)", textDecoration: "none" }}>↗ Official source</a>}
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
 
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.5rem", marginTop: "2rem", display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>Key</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-muted)" }}>
-              <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)", background: "var(--bg-muted)", padding: "1px 10px", borderRadius: 6, border: "1px solid var(--border)" }}>—</span>
-              No official position found in party platform
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-muted)" }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "1px 10px", borderRadius: 6, border: "1px solid var(--border)" }}>› bullet</span>
-              Key policy extracted from platform
-            </span>
-          </div>
-          <p style={{ fontSize: 12, color: "var(--text-faint)", lineHeight: 1.6, margin: 0 }}>⚠️ Positions are AI-generated summaries for informational purposes only. Always verify with official party sources.</p>
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.75rem", marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>Key</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, color: "var(--text-muted)" }}>
+            <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)", background: "var(--bg-muted)", padding: "2px 11px", borderRadius: 7, border: "1px solid var(--border)" }}>—</span>
+            No official position found in party platform
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, color: "var(--text-muted)" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "2px 11px", borderRadius: 7, border: "1px solid var(--border)" }}>› bullet</span>
+            Key policy extracted from platform
+          </span>
         </div>
-
-        <NewsFeed country={country} />
+        <p style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.65, margin: 0 }}>
+          <span style={{ flexShrink: 0, marginTop: 2 }}>{Icon.warn(13)}</span>
+          Positions are AI-generated summaries for informational purposes only. Always verify with official party sources before making voting decisions.
+        </p>
       </div>
+
+      <NewsFeed country={country} />
     </div>
   );
 }
@@ -722,9 +701,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [dark, setDark] = useState(true);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [matchResults, setMatchResults] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState(null);
   const comparatorRef = useRef(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
@@ -765,6 +746,12 @@ export default function Home() {
     const countryParties = (country && COUNTRIES[country]?.parties?.length) ? COUNTRIES[country].parties : Object.keys(PARTY_MATCH_RULES);
     setMatchResults(computeMatch(answers, countryParties));
     setShowQuiz(false);
+    revealMap();
+  }
+
+  function revealMap() {
+    setRevealed(true);
+    setTimeout(() => mapRef.current?.scrollIntoView({ behavior: "smooth" }), 150);
   }
 
   const totalParties = Object.keys(PARTIES).length;
@@ -773,77 +760,154 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", transition: "background 0.2s" }}>
 
-      {showQuiz && <QuizModal onComplete={handleQuizComplete} onSkip={() => setShowQuiz(false)} />}
+      {showQuiz && <QuizModal onComplete={handleQuizComplete} onClose={() => { setShowQuiz(false); revealMap(); }} />}
 
       {/* Nav */}
-      <nav style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100, padding: "0 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
-        <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em", color: "white", display: "flex", alignItems: "center", gap: 8 }}>
-          🗳️ Voteview
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", padding: "2px 7px", borderRadius: 99 }}>Beta</span>
+      <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(14px)", position: "sticky", top: 0, zIndex: 100, padding: "0 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+        <div style={{ fontWeight: 700, fontSize: 15.5, letterSpacing: "-0.02em", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 9 }}>
+          {Icon.vote(19)} Voteview
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "var(--bg-muted)", color: "var(--text-muted)", padding: "3px 9px", borderRadius: 99 }}>Beta</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setShowQuiz(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 99, padding: "5px 14px", fontSize: 13, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}>
-            🗳️ {quizAnswers ? "Retake quiz" : "Take quiz"}
-          </button>
-          <button onClick={() => setDark(d => !d)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 99, padding: "5px 14px", fontSize: 13, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}>
-            {dark ? "☀️ Light" : "🌙 Dark"}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {revealed && (
+            <button onClick={() => setShowQuiz(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 16px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer", transition: "all 0.18s ease" }}>
+              {Icon.vote(14)} {quizAnswers ? "Retake quiz" : "Take quiz"}
+            </button>
+          )}
+          <button onClick={() => setDark(d => !d)} aria-label="Toggle theme" style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 14px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}>
+            {dark ? Icon.sun(14) : Icon.moon(14)}
           </button>
         </div>
       </nav>
 
       {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #0f1923 50%, #0a0a0a 100%)", padding: "5rem 2rem 4rem", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        {/* Background glow */}
-        <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 600, height: 300, background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ background: "var(--bg)", padding: "5.5rem 2rem 4.5rem", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute", top: "-10%", left: "50%", transform: "translateX(-50%)",
+          width: 900, height: 500,
+          background: "linear-gradient(120deg, var(--grad-1), var(--grad-2), var(--grad-3), var(--grad-4))",
+          backgroundSize: "300% 300%",
+          animation: "gradientShift 8s ease infinite",
+          opacity: 0.16,
+          filter: "blur(60px)",
+          pointerEvents: "none",
+        }} />
 
-        <div style={{ position: "relative", maxWidth: 800, margin: "0 auto" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(255,255,255,0.05)", padding: "5px 14px", borderRadius: 99, marginBottom: "2rem", border: "1px solid rgba(255,255,255,0.08)" }}>
-            🌐 Global election intelligence
+        <div style={{ position: "relative", maxWidth: 760, margin: "0 auto" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11.5, fontWeight: 700,
+            color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase",
+            background: "var(--bg-card)", padding: "6px 16px", borderRadius: 99, marginBottom: "2rem",
+            border: "1px solid var(--border)",
+            animation: "bounceIn 0.6s ease-out",
+          }}>
+            <span style={{ display: "inline-flex", animation: "wiggle 2.5s ease-in-out infinite" }}>{Icon.globe(13)}</span> Global election intelligence
           </div>
 
-          <h1 style={{ fontSize: 64, fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.05, color: "white", marginBottom: "1.5rem" }}>
-            Know what you're<br />
-            <span style={{ background: "linear-gradient(135deg, #818cf8, #6366f1)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>voting for</span>
+          <h1 style={{
+            fontSize: 60, fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.06,
+            color: "var(--text-primary)", marginBottom: "1.5rem",
+            animation: "floatUp 0.7s ease-out 0.1s both",
+          }}>
+            Make An<br />
+            <span style={{
+              background: "linear-gradient(120deg, var(--grad-1), var(--grad-2), var(--grad-3))",
+              backgroundSize: "200% 200%",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              animation: "gradientShift 5s ease infinite",
+              display: "inline-block",
+            }}>INFORMED VOTE</span>
           </h1>
-
-          <p style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 3rem" }}>
-            Compare political party positions side-by-side — across issues, in plain language, straight from official platforms.
+          <p style={{
+            fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+            color: "var(--text-muted)", marginBottom: "1.75rem",
+            animation: "floatUp 0.7s ease-out 0.15s both",
+          }}>
+            Know before you vote
           </p>
 
-          {/* Animated stats */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "4rem", marginBottom: "4rem", flexWrap: "wrap" }}>
-            <StatCounter end={Object.keys(COUNTRIES).length} label="Elections tracked" />
-            <StatCounter end={totalParties} label="Parties analysed" />
-            <StatCounter end={totalPositions} label="Positions extracted" />
-            <StatCounter end={1600000000} label="People voting in 2026" duration={3000} />
+          <p style={{ fontSize: 17.5, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 540, margin: "0 auto 1.25rem", animation: "floatUp 0.7s ease-out 0.2s both" }}>
+            Voteview compares political party positions side-by-side, in plain language, straight from official platforms — no spin, no jargon.
+          </p>
+
+          <p style={{ fontSize: 14.5, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 3rem", animation: "floatUp 0.7s ease-out 0.3s both" }}>
+            Start with a short quiz to find your political match, then explore any election on the map.
+          </p>
+
+          {!revealed && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: "3.5rem", animation: "floatUp 0.7s ease-out 0.4s both" }}>
+              <button
+                onClick={() => setShowQuiz(true)}
+                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.06) rotate(-1deg)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "scale(1) rotate(0deg)"; }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 16,
+                  fontWeight: 700, fontSize: 15.5,
+                  background: "linear-gradient(120deg, var(--grad-1), var(--grad-2))",
+                  color: "#fff", border: "none", cursor: "pointer",
+                  boxShadow: "0 10px 30px rgba(232,93,117,0.3)",
+                  transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              >
+                {Icon.vote(18)} Take the quiz
+              </button>
+              <button onClick={revealMap} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", fontSize: 13.5, color: "var(--text-muted)", cursor: "pointer", padding: "4px 8px" }}>
+                Skip and browse elections {Icon.arrowRight(13)}
+              </button>
+            </div>
+          )}
+
+          {/* Bento stats grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, maxWidth: 640, margin: "0 auto 2.5rem", animation: "floatUp 0.7s ease-out 0.5s both" }}>
+            {[
+              { end: Object.keys(COUNTRIES).length, label: "Elections tracked", grad: "var(--grad-1)" },
+              { end: totalParties, label: "Parties analysed", grad: "var(--grad-2)" },
+              { end: totalPositions, label: "Positions extracted", grad: "var(--grad-3)" },
+              { end: 1600000000, label: "Voting in 2026", duration: 3000, grad: "var(--grad-4)" },
+            ].map((s, i) => (
+              <div key={i}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px) scale(1.03)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+                style={{
+                  background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16,
+                  padding: "1.25rem 0.75rem", borderTop: `3px solid ${s.grad}`,
+                  transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)", cursor: "default",
+                }}>
+                <StatCounter end={s.end} label={s.label} duration={s.duration} />
+              </div>
+            ))}
           </div>
 
-          {/* Feature pills */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-            {["AI-extracted from official sources", "Neutral & non-partisan", "Real-time election news"].map(f => (
-              <span key={f} style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.04)", padding: "5px 12px", borderRadius: 99, border: "1px solid rgba(255,255,255,0.08)" }}>
-                <span style={{ color: "#818cf8" }}>✓</span> {f}
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", animation: "floatUp 0.7s ease-out 0.6s both" }}>
+            {["AI-extracted from official sources", "Neutral & non-partisan", "Real-time election news"].map((f, i) => (
+              <span key={f} style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 7, background: "var(--bg-card)", padding: "6px 14px", borderRadius: 99, border: "1px solid var(--border)" }}>
+                <span style={{ color: [`var(--grad-1)`, `var(--grad-2)`, `var(--grad-3)`][i % 3], display: "flex" }}>{Icon.check(12)}</span> {f}
               </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Map section */}
-      <div style={{ background: "linear-gradient(180deg, #0f1923 0%, #0a0a0a 100%)", padding: "3rem 2rem" }}>
-        <div style={{ maxWidth: 1300, margin: "0 auto" }}>
-          <WorldMap onSelectCountry={handleSelectCountry} selectedCountry={country} />
-        </div>
-      </div>
-
-      {/* Loading state */}
-      {loading && (
-        <div style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)", fontSize: 14 }}>
-          Loading party data for {country}...
+      {revealed && (
+        <div ref={mapRef} style={{ background: "var(--bg)", padding: "3.5rem 2rem", borderTop: "1px solid var(--border)" }}>
+          <div style={{ maxWidth: 1300, margin: "0 auto" }}>
+            <WorldMap onSelectCountry={handleSelectCountry} selectedCountry={country} />
+          </div>
         </div>
       )}
 
-      {/* Comparator */}
+      {loading && (
+        <div style={{ maxWidth: 1300, margin: "0 auto", padding: "3rem 2rem" }}>
+          <div style={{ height: 24, width: 200, background: "var(--bg-muted)", borderRadius: 8, marginBottom: 12, animation: "pulse 1.4s ease-in-out infinite" }} />
+          <div style={{ height: 36, width: 280, background: "var(--bg-muted)", borderRadius: 8, marginBottom: 28, animation: "pulse 1.4s ease-in-out infinite" }} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+            {[1,2,3,4].map(i => (
+              <div key={i} style={{ height: 160, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, animation: "pulse 1.4s ease-in-out infinite" }} />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div ref={comparatorRef}>
         {data && !loading && (
           <ComparisonView data={data} country={country} year={year} matchResults={matchResults} />

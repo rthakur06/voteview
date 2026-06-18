@@ -1,33 +1,45 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #fafaf9;
+  --bg: #faf9f7;
   --bg-card: #ffffff;
-  --bg-muted: #f5f5f3;
-  --border: #ebebeb;
-  --border-light: #f0f0f0;
-  --text-primary: #1a1a1a;
-  --text-secondary: #555;
-  --text-muted: #aaa;
-  --text-faint: #ccc;
-  --nav-bg: rgba(250,250,249,0.88);
-  --row-alt: #fdfdfb;
-  --thead-bg: #fafaf9;
+  --bg-muted: #f3f1ed;
+  --border: #e8e5df;
+  --border-light: #efece6;
+  --text-primary: #1c2024;
+  --text-secondary: #5a5f66;
+  --text-muted: #8a8f97;
+  --text-faint: #b8bcc2;
+  --nav-bg: rgba(250,249,247,0.88);
+  --row-alt: #f8f7f4;
+  --thead-bg: #f8f7f4;
+  --accent: #b45309;
+  --accent-soft: #fef3e7;
+  --grad-1: #f0a857;
+  --grad-2: #e85d75;
+  --grad-3: #6c63ff;
+  --grad-4: #2ec4b6;
 }
 
 [data-theme="dark"] {
-  --bg: #111110;
-  --bg-card: #1c1c1a;
-  --bg-muted: #222220;
-  --border: #2e2e2c;
-  --border-light: #252523;
-  --text-primary: #f0efe9;
-  --text-secondary: #aaa;
-  --text-muted: #666;
-  --text-faint: #444;
-  --nav-bg: rgba(17,17,16,0.88);
-  --row-alt: #191918;
-  --thead-bg: #181817;
+  --bg: #0e1015;
+  --bg-card: #161a21;
+  --bg-muted: #1c212a;
+  --border: #262c37;
+  --border-light: #20242d;
+  --text-primary: #f1f2f4;
+  --text-secondary: #a8adb6;
+  --text-muted: #6b7180;
+  --text-faint: #454b58;
+  --nav-bg: rgba(14,16,21,0.88);
+  --row-alt: #131720;
+  --thead-bg: #12151c;
+  --accent: #f0a857;
+  --accent-soft: #2a2110;
+  --grad-1: #f0a857;
+  --grad-2: #ff6b9d;
+  --grad-3: #8b7fff;
+  --grad-4: #3ddbc9;
 }
 
 body {
@@ -48,6 +60,43 @@ select {
   cursor: pointer;
   width: 100%;
   transition: border-color 0.15s;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.7); }
+  60% { opacity: 1; transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 select:focus { outline: none; border-color: var(--text-primary); }
