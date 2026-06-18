@@ -82,7 +82,7 @@ const ISSUES = [
   { key: "Climate & Environment", icon: "leaf" },
   { key: "Immigration", icon: "globe" },
   { key: "Education", icon: "book" },
-  { key: "EU & Foreign Policy", icon: "flag" }
+  { key: "Foreign Policy", icon: "flag" }
 ];
 
 const PARTIES = {
