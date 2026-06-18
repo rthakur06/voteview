@@ -124,6 +124,15 @@ const QUIZ_QUESTIONS = [
   { id: "international", question: "How should your country engage with the world?", options: [ { label: "Deep international cooperation — global problems need global solutions", value: "globalist" }, { label: "Engage internationally but protect national interests and sovereignty", value: "moderate" }, { label: "Put our country first — be sceptical of international institutions", value: "nationalist" } ] }
 ];
 
+const ISSUE_FOR_Q = {
+  economy: "Economy",
+  immigration: "Immigration",
+  climate: "Climate",
+  welfare: "Public services",
+  authority: "Civil liberties",
+  international: "Foreign policy",
+};
+
 const PARTY_MATCH_RULES = {
   "Vansterpartiet":     { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist" },
   "Socialdemokraterna": { economy: "left",   immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist" },
@@ -169,6 +178,172 @@ function computeMatch(answers, countryParties) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([party, score]) => ({ party, score, pct: Math.round((score / QUIZ_QUESTIONS.length) * 100) }));
+}
+
+/* ---------- Political compass ---------- */
+// Two axes derived from the same answer dimensions used for matching.
+// x: economic  (-1 left … +1 right)   from economy + welfare
+// y: social    (-1 open/liberal … +1 controlled/authoritarian) from authority + immigration + international
+const AXIS_SCORE = {
+  economy:       { left: -1, centre: 0, right: 1 },
+  welfare:       { public: -1, mixed: 0, private: 1 },
+  authority:     { liberal: -1, moderate: 0, authoritarian: 1 },
+  immigration:   { open: -1, moderate: 0, restrictive: 1 },
+  international: { globalist: -1, moderate: 0, nationalist: 1 },
+};
+
+function computeCompass(rules) {
+  if (!rules) return null;
+  const econVals = ["economy", "welfare"].map(k => AXIS_SCORE[k]?.[rules[k]]).filter(v => v != null);
+  const socVals = ["authority", "immigration", "international"].map(k => AXIS_SCORE[k]?.[rules[k]]).filter(v => v != null);
+  if (!econVals.length || !socVals.length) return null;
+  const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
+  return { x: avg(econVals), y: avg(socVals) };
+}
+
+const QUADRANT_LABELS = [
+  { x: -1, y: -1, label: "Libertarian left" },
+  { x: 1, y: -1, label: "Libertarian right" },
+  { x: -1, y: 1, label: "Authoritarian left" },
+  { x: 1, y: 1, label: "Authoritarian right" },
+];
+
+function PoliticalCompass({ parties, userPos, country }) {
+  const [hover, setHover] = useState(null);
+  const SIZE = 460, PAD = 46, INNER = SIZE - PAD * 2;
+  // collision-aware label nudging done visually with small offsets per party
+  const toPx = (x, y) => ({
+    cx: PAD + ((x + 1) / 2) * INNER,
+    cy: PAD + ((1 - y) / 2) * INNER, // +y (authoritarian) at top, -y (libertarian) at bottom
+  });
+
+  const points = parties
+    .map(party => {
+      const pos = computeCompass(PARTY_MATCH_RULES[party]);
+      if (!pos) return null;
+      const p = PARTIES[party] || { color: "#888", short: "?" };
+      return { party, color: p.color, short: p.short, ...pos, ...toPx(pos.x, pos.y) };
+    })
+    .filter(Boolean);
+
+  // jitter overlapping dots a little so labels stay readable
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      const dx = points[i].cx - points[j].cx, dy = points[i].cy - points[j].cy;
+      const d = Math.hypot(dx, dy);
+      if (d < 26 && d > 0) {
+        const push = (26 - d) / 2;
+        const ux = dx / d, uy = dy / d;
+        points[i].cx += ux * push; points[i].cy += uy * push;
+        points[j].cx -= ux * push; points[j].cy -= uy * push;
+      }
+    }
+  }
+
+  const userPx = userPos ? toPx(userPos.x, userPos.y) : null;
+
+  return (
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.6rem 1.75rem 1.4rem", marginBottom: "2rem", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 18 }}>
+        <div>
+          <p className="mono-label" style={{ margin: "0 0 6px" }}>Fig. 01 — Political compass</p>
+          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 27, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.1 }}>
+            Where the parties land
+          </h3>
+        </div>
+        {userPx && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--accent-soft)", border: "1px solid var(--accent)", borderRadius: 99, padding: "6px 13px" }}>
+            <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 0 3px var(--accent-soft)" }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent-ink)" }}>You are plotted here</span>
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 22, alignItems: "stretch" }}>
+        <div style={{ position: "relative", flex: "1 1 380px", minWidth: 280, maxWidth: SIZE + 30 }}>
+          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}>
+            {/* quadrant fills */}
+            <rect x={PAD} y={PAD} width={INNER / 2} height={INNER / 2} fill="var(--compass-quad)" />
+            <rect x={PAD + INNER / 2} y={PAD + INNER / 2} width={INNER / 2} height={INNER / 2} fill="var(--compass-quad)" />
+            {/* grid */}
+            {[0, 0.25, 0.5, 0.75, 1].map(t => (
+              <g key={t}>
+                <line x1={PAD + t * INNER} y1={PAD} x2={PAD + t * INNER} y2={PAD + INNER} stroke="var(--compass-grid)" strokeWidth={t === 0.5 ? 0 : 1} />
+                <line x1={PAD} y1={PAD + t * INNER} x2={PAD + INNER} y2={PAD + t * INNER} stroke="var(--compass-grid)" strokeWidth={t === 0.5 ? 0 : 1} />
+              </g>
+            ))}
+            {/* outer frame */}
+            <rect x={PAD} y={PAD} width={INNER} height={INNER} fill="none" stroke="var(--border-strong)" strokeWidth={1.2} rx={4} />
+            {/* axes */}
+            <line x1={PAD} y1={PAD + INNER / 2} x2={PAD + INNER} y2={PAD + INNER / 2} stroke="var(--compass-axis)" strokeWidth={1.4} />
+            <line x1={PAD + INNER / 2} y1={PAD} x2={PAD + INNER / 2} y2={PAD + INNER} stroke="var(--compass-axis)" strokeWidth={1.4} />
+
+            {/* axis captions */}
+            <text x={PAD - 8} y={PAD + INNER / 2} textAnchor="end" dominantBaseline="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)" style={{ textTransform: "uppercase" }}>LEFT</text>
+            <text x={PAD + INNER + 8} y={PAD + INNER / 2} textAnchor="start" dominantBaseline="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">RIGHT</text>
+            <text x={PAD + INNER / 2} y={PAD - 12} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">AUTHORITARIAN</text>
+            <text x={PAD + INNER / 2} y={PAD + INNER + 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">LIBERTARIAN</text>
+
+            {/* quadrant labels */}
+            {QUADRANT_LABELS.map(q => {
+              const { cx, cy } = toPx(q.x * 0.62, q.y * 0.62);
+              return <text key={q.label} x={cx} y={cy} textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text-faint)" style={{ pointerEvents: "none" }}>{q.label}</text>;
+            })}
+
+            {/* party dots */}
+            {points.map((pt, i) => {
+              const active = hover === pt.party;
+              return (
+                <g key={pt.party}
+                  onMouseEnter={() => setHover(pt.party)}
+                  onMouseLeave={() => setHover(null)}
+                  style={{ cursor: "default", animation: `popDot 0.5s cubic-bezier(0.34,1.56,0.64,1) ${0.05 * i}s both` }}>
+                  <circle cx={pt.cx} cy={pt.cy} r={active ? 11 : 8} fill={pt.color} stroke="var(--bg-card)" strokeWidth={2.5} style={{ transition: "r 0.15s" }} />
+                  <text x={pt.cx} y={pt.cy} textAnchor="middle" dominantBaseline="central" fontFamily="var(--font-mono)" fontSize="8" fontWeight="700" fill="#fff" style={{ pointerEvents: "none" }}>{pt.short}</text>
+                  {active && (
+                    <text x={pt.cx} y={pt.cy - 16} textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--text-primary)" style={{ pointerEvents: "none" }}>{pt.party}</text>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* user marker */}
+            {userPx && (
+              <g style={{ animation: "popDot 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.45s both" }}>
+                <circle cx={userPx.cx} cy={userPx.cy} r={16} fill="none" stroke="var(--accent)" strokeOpacity={0.4} strokeWidth={1.5} style={{ transformOrigin: `${userPx.cx}px ${userPx.cy}px`, animation: "ring 1.8s ease-out infinite" }} />
+                <circle cx={userPx.cx} cy={userPx.cy} r={9} fill="var(--accent)" stroke="var(--bg-card)" strokeWidth={3} />
+                <text x={userPx.cx} y={userPx.cy - 18} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fontWeight="700" letterSpacing="0.5" fill="var(--accent-ink)">YOU</text>
+              </g>
+            )}
+          </svg>
+        </div>
+
+        <div style={{ flex: "1 1 240px", minWidth: 220, display: "flex", flexDirection: "column" }}>
+          <p className="mono-label" style={{ margin: "0 0 12px" }}>Reading the grid</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {[...points].sort((a, b) => a.x - b.x).map(pt => {
+              const q = quadrantLabel({ x: pt.x, y: pt.y });
+              const active = hover === pt.party;
+              return (
+                <div key={pt.party}
+                  onMouseEnter={() => setHover(pt.party)}
+                  onMouseLeave={() => setHover(null)}
+                  style={{ display: "flex", alignItems: "center", gap: 11, padding: "7px 10px", borderRadius: 9, background: active ? "var(--bg-muted)" : "transparent", transition: "background 0.15s", cursor: "default" }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: pt.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{pt.short}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", flex: 1, lineHeight: 1.25, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pt.party}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{q}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <p style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--text-faint)", margin: "8px 0 0", lineHeight: 1.6 }}>
+        Axes are modelled from each party&apos;s stated positions, not vote-share. Positions are approximate and editorial.
+      </p>
+    </div>
+  );
 }
 
 /* ---------- Shared components ---------- */
@@ -239,30 +414,86 @@ function QuizModal({ onComplete, onClose }) {
   );
 }
 
-function MatchBanner({ matches, onDismiss }) {
+function quadrantLabel(pos) {
+  if (!pos) return null;
+  const ew = Math.abs(pos.x) < 0.18 ? "centrist" : pos.x < 0 ? "left" : "right";
+  const ns = Math.abs(pos.y) < 0.18 ? "moderate" : pos.y < 0 ? "libertarian" : "authoritarian";
+  if (ew === "centrist" && ns === "moderate") return "Centre ground";
+  if (ew === "centrist") return ns[0].toUpperCase() + ns.slice(1) + " centre";
+  if (ns === "moderate") return "Moderate " + ew;
+  return ns[0].toUpperCase() + ns.slice(1) + " " + ew;
+}
+
+function MatchBanner({ matches, answers, country, onDismiss }) {
+  const [copied, setCopied] = useState(false);
   if (!matches || matches.length === 0) return null;
   const top = matches[0];
   const p = PARTIES[top.party] || { color: "#888" };
+  const userPos = answers ? computeCompass(answers) : null;
+  const quad = quadrantLabel(userPos);
+
+  // per-dimension agreement vs top match
+  const rules = PARTY_MATCH_RULES[top.party] || {};
+  const breakdown = answers ? QUIZ_QUESTIONS.map(q => ({
+    label: ISSUE_FOR_Q[q.id] || q.id,
+    agree: rules[q.id] === answers[q.id],
+  })) : [];
+
+  function share() {
+    const lines = [
+      `My Voteview political match${country ? ` (${country})` : ""}:`,
+      `→ ${top.party} — ${top.pct}% alignment`,
+      quad ? `→ Leaning: ${quad}` : null,
+      matches[1] ? `→ Runner-up: ${matches[1].party} (${matches[1].pct}%)` : null,
+      `Find yours at Voteview.`,
+    ].filter(Boolean).join("\n");
+    navigator.clipboard?.writeText(lines).then(() => {
+      setCopied(true); setTimeout(() => setCopied(false), 2200);
+    }).catch(() => {});
+  }
+
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem", borderLeft: `4px solid ${p.color}`, animation: "slideIn 0.4s ease-out" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 10px" }}>Your political match</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-            <Avatar party={top.party} size={42} />
-            <div>
-              <p style={{ fontWeight: 700, fontSize: 17, color: "var(--text-primary)", margin: 0 }}>{top.party}</p>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{top.pct}% alignment with your answers</p>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {matches.slice(1).map(m => {
-              const mp = PARTIES[m.party] || { color: "#888" };
-              return <div key={m.party} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "5px 12px", borderRadius: 99, border: "1px solid var(--border)" }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: mp.color }} />{m.party} · {m.pct}%</div>;
-            })}
-          </div>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: 0, marginBottom: "2rem", overflow: "hidden", boxShadow: "var(--shadow-md)", animation: "slideIn 0.45s ease-out" }}>
+      <div style={{ height: 4, background: `linear-gradient(90deg, ${p.color}, var(--accent))` }} />
+      <div style={{ padding: "1.6rem 1.8rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 18 }}>
+          <p className="mono-label" style={{ margin: 0 }}>Your result · {QUIZ_QUESTIONS.length} answers</p>
+          <button onClick={onDismiss} aria-label="Dismiss result" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex", borderRadius: 8 }}>{Icon.close(16)}</button>
         </div>
-        <button onClick={onDismiss} aria-label="Dismiss" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex", borderRadius: 8 }}>{Icon.close(16)}</button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
+          <Avatar party={top.party} size={52} />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <p style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 28, color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>{top.party}</p>
+            <p style={{ fontSize: 13.5, color: "var(--text-secondary)", margin: "3px 0 0" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: p.color }}>{top.pct}%</span> alignment
+              {quad && <> · you lean <strong style={{ color: "var(--text-primary)" }}>{quad}</strong></>}
+            </p>
+          </div>
+          <button onClick={share}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid var(--border-strong)", background: copied ? "var(--accent-soft)" : "var(--bg-muted)", color: copied ? "var(--accent-ink)" : "var(--text-secondary)", fontSize: 12.5, fontWeight: 600 }}>
+            {copied ? Icon.check(13) : Icon.link(13)} {copied ? "Copied" : "Copy result"}
+          </button>
+        </div>
+
+        {breakdown.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+            {breakdown.map(b => (
+              <span key={b.label} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 600, padding: "5px 11px", borderRadius: 99, border: `1px solid ${b.agree ? p.color : "var(--border)"}`, background: b.agree ? p.color + "14" : "transparent", color: b.agree ? "var(--text-primary)" : "var(--text-muted)" }}>
+                <span style={{ display: "flex", color: b.agree ? p.color : "var(--text-faint)" }}>{b.agree ? Icon.check(11) : Icon.close(11)}</span>
+                {b.label}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", borderTop: "1px solid var(--border-light)", paddingTop: 14 }}>
+          <span className="mono-label" style={{ alignSelf: "center" }}>Also close</span>
+          {matches.slice(1).map(m => {
+            const mp = PARTIES[m.party] || { color: "#888" };
+            return <div key={m.party} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--text-secondary)", background: "var(--bg-muted)", padding: "5px 12px", borderRadius: 99, border: "1px solid var(--border)" }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: mp.color }} />{m.party} · <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{m.pct}%</span></div>;
+          })}
+        </div>
       </div>
     </div>
   );
@@ -357,10 +588,23 @@ function NewsFeed({ country }) {
 
   return (
     <div style={{ marginTop: "3rem", borderTop: "1px solid var(--border)", paddingTop: "2.25rem" }}>
-      <h3 style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", margin: "0 0 1.25rem" }}>
+      <h3 style={{ display: "flex", alignItems: "center", gap: 11, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: "0 0 1.25rem", lineHeight: 1.1 }}>
         {Icon.news(18)} Latest news — {c?.flag} {country}
       </h3>
-      {loading && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Loading news…</p>}
+      {loading && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+              <div className="skeleton" style={{ height: 140 }} />
+              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="skeleton" style={{ height: 11, width: "40%", borderRadius: 6 }} />
+                <div className="skeleton" style={{ height: 14, width: "92%", borderRadius: 6 }} />
+                <div className="skeleton" style={{ height: 14, width: "70%", borderRadius: 6 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {error && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{error}</p>}
       {!loading && !error && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
@@ -383,9 +627,12 @@ function NewsFeed({ country }) {
   );
 }
 
-function StatCounter({ end, label, duration = 2000 }) {
+function StatCounter({ end, label, duration = 2000, compact = false }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
+  const fmt = v => compact
+    ? new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v)
+    : v.toLocaleString();
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -406,7 +653,7 @@ function StatCounter({ end, label, duration = 2000 }) {
 
   return (
     <div ref={ref} style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text-primary)", lineHeight: 1 }}>{count.toLocaleString()}</div>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: "clamp(22px, 6vw, 30px)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text-primary)", lineHeight: 1, whiteSpace: "nowrap" }}>{fmt(count)}</div>
       <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 8, fontWeight: 500, letterSpacing: "0.01em", lineHeight: 1.3 }}>{label}</div>
     </div>
   );
@@ -421,7 +668,7 @@ function WorldMap({ onSelectCountry, selectedCountry }) {
     <div style={{ position: "relative", background: "var(--bg-card)", borderRadius: 24, border: "1px solid var(--border)", overflow: "hidden" }}>
       <div style={{ padding: "1.75rem 1.75rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 6px" }}>Interactive map</p>
+          <p className="mono-label" style={{ margin: "0 0 6px" }}>Interactive map</p>
           <p style={{ fontSize: 14.5, color: "var(--text-secondary)", margin: 0 }}>Click a highlighted country below to load its election</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -483,7 +730,7 @@ function WorldMap({ onSelectCountry, selectedCountry }) {
   );
 }
 
-function ComparisonView({ data, country, year, matchResults }) {
+function ComparisonView({ data, country, year, matchResults, quizAnswers }) {
   const allParties = Object.keys(data);
   const [selectedParties, setSelectedParties] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -516,13 +763,14 @@ function ComparisonView({ data, country, year, matchResults }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: 14 }}>
         <div>
           <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{COUNTRIES[country]?.flag} {country} · {year} election</p>
-          <h2 style={{ fontSize: 25, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>Party positions</h2>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 34, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>Party positions</h2>
         </div>
         <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{parties.length} parties · {ISSUES.length} issues</div>
       </div>
 
-      {matchResults && showMatch && <MatchBanner matches={matchResults} onDismiss={() => setShowMatch(false)} />}
+      {matchResults && showMatch && <MatchBanner matches={matchResults} answers={quizAnswers} country={country} onDismiss={() => setShowMatch(false)} />}
       <GeopoliticsCard country={country} />
+      <PoliticalCompass parties={parties} userPos={quizAnswers ? computeCompass(quizAnswers) : null} country={country} />
       <SpectrumBar parties={parties} />
 
       <div style={{ display: "flex", gap: 6, marginBottom: "2rem", borderBottom: "1px solid var(--border)" }}>
@@ -556,7 +804,7 @@ function ComparisonView({ data, country, year, matchResults }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.75rem" }}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>{Icon[issue.icon](20)}</div>
                   <div>
-                    <h3 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>{issue.key}</h3>
+                    <h3 style={{ fontFamily: "var(--font-display)", fontSize: 27, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.1 }}>{issue.key}</h3>
                     <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Where each party stands</p>
                   </div>
                 </div>
@@ -591,7 +839,17 @@ function ComparisonView({ data, country, year, matchResults }) {
                               <button onClick={() => toggleCell(party, selectedIssue)} style={{ fontSize: 12.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
                                 {expanded ? "Hide summary" : "Show summary"}
                               </button>
-                              {expanded && <p style={{ margin: "11px 0 0", fontSize: 13.5, lineHeight: 1.7, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 13 }}>{pos.position_summary}</p>}
+                              {expanded && (
+                                <div style={{ margin: "11px 0 0" }}>
+                                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "var(--text-secondary)", borderLeft: `3px solid ${p.color}`, paddingLeft: 13 }}>{pos.position_summary}</p>
+                                  {pos.supporting_quote && (
+                                    <blockquote style={{ margin: "12px 0 0", padding: "10px 14px", background: "var(--bg-muted)", borderRadius: 10, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 15, lineHeight: 1.5, color: "var(--text-primary)", position: "relative" }}>
+                                      <span style={{ color: p.color, fontWeight: 700, marginRight: 4 }}>&ldquo;</span>{pos.supporting_quote}<span style={{ color: p.color, fontWeight: 700, marginLeft: 2 }}>&rdquo;</span>
+                                      <span style={{ display: "block", fontFamily: "var(--font-mono)", fontStyle: "normal", fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 6 }}>From the party platform</span>
+                                    </blockquote>
+                                  )}
+                                </div>
+                              )}
                               {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 11, width: "100%" }}>{Icon.link()} Official party website</a>}
                             </>
                           )}
@@ -655,7 +913,17 @@ function ComparisonView({ data, country, year, matchResults }) {
                                 <button onClick={() => toggleCell(party, key)} style={{ marginTop: 5, fontSize: 11.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
                                   {expanded ? "Hide summary" : "Show summary"}
                                 </button>
-                                {expanded && <p style={{ margin: "9px 0 0", fontSize: 12.5, lineHeight: 1.7, color: "var(--text-muted)", fontStyle: "italic", borderLeft: `3px solid ${p.color}`, paddingLeft: 11 }}>{pos.position_summary}</p>}
+                                {expanded && (
+                                  <div style={{ margin: "9px 0 0" }}>
+                                    <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.7, color: "var(--text-secondary)", borderLeft: `3px solid ${p.color}`, paddingLeft: 11 }}>{pos.position_summary}</p>
+                                    {pos.supporting_quote && (
+                                      <blockquote style={{ margin: "10px 0 0", padding: "8px 12px", background: "var(--bg-muted)", borderRadius: 9, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.5, color: "var(--text-primary)" }}>
+                                        <span style={{ color: p.color, fontWeight: 700, marginRight: 3 }}>&ldquo;</span>{pos.supporting_quote}<span style={{ color: p.color, fontWeight: 700, marginLeft: 2 }}>&rdquo;</span>
+                                        <span style={{ display: "block", fontFamily: "var(--font-mono)", fontStyle: "normal", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 5 }}>From the party platform</span>
+                                      </blockquote>
+                                    )}
+                                  </div>
+                                )}
                                 {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontSize: 10.5, color: "var(--text-faint)", textDecoration: "none" }}>{Icon.link(10)} Official source</a>}
                               </div>
                             )}
@@ -763,75 +1031,71 @@ export default function Home() {
       {showQuiz && <QuizModal onComplete={handleQuizComplete} onClose={() => { setShowQuiz(false); revealMap(); }} />}
 
       {/* Nav */}
-      <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(14px)", position: "sticky", top: 0, zIndex: 100, padding: "0 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-        <div style={{ fontWeight: 700, fontSize: 15.5, letterSpacing: "-0.02em", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 9 }}>
-          {Icon.vote(19)} Voteview
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "var(--bg-muted)", color: "var(--text-muted)", padding: "3px 9px", borderRadius: 99 }}>Beta</span>
+      <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", position: "sticky", top: 0, zIndex: 100, padding: "0 clamp(1rem, 4vw, 2rem)", display: "flex", alignItems: "center", justifyContent: "space-between", height: 62 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ display: "flex", color: "var(--accent)" }}>{Icon.vote(20)}</span>
+          <span style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 23, letterSpacing: "0", color: "var(--text-primary)", lineHeight: 1 }}>Voteview</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", background: "var(--bg-muted)", color: "var(--text-muted)", padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)" }}>Beta</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {revealed && (
-            <button onClick={() => setShowQuiz(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 16px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer", transition: "all 0.18s ease" }}>
+            <button onClick={() => setShowQuiz(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 16px", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", cursor: "pointer", transition: "all 0.18s ease" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-secondary)"; }}>
               {Icon.vote(14)} {quizAnswers ? "Retake quiz" : "Take quiz"}
             </button>
           )}
-          <button onClick={() => setDark(d => !d)} aria-label="Toggle theme" style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 14px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}>
-            {dark ? Icon.sun(14) : Icon.moon(14)}
+          <button onClick={() => setDark(d => !d)} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "8px 12px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}>
+            {dark ? Icon.sun(15) : Icon.moon(15)}
           </button>
         </div>
       </nav>
 
       {/* Hero */}
-      <div style={{ background: "var(--bg)", padding: "5.5rem 2rem 4.5rem", textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "var(--bg)", padding: "clamp(3.5rem, 8vw, 6rem) 1.5rem 4.5rem", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 1 }}>
         <div style={{
-          position: "absolute", top: "-10%", left: "50%", transform: "translateX(-50%)",
-          width: 900, height: 500,
-          background: "linear-gradient(120deg, var(--grad-1), var(--grad-2), var(--grad-3), var(--grad-4))",
-          backgroundSize: "300% 300%",
-          animation: "gradientShift 8s ease infinite",
+          position: "absolute", top: "-18%", left: "50%", transform: "translateX(-50%)",
+          width: 820, maxWidth: "120%", height: 460,
+          background: "radial-gradient(closest-side, var(--grad-2), transparent 72%), radial-gradient(closest-side, var(--grad-1), transparent 70%)",
+          backgroundPosition: "30% 40%, 70% 60%",
+          backgroundRepeat: "no-repeat",
           opacity: 0.16,
-          filter: "blur(60px)",
+          filter: "blur(46px)",
+          animation: "drift 14s ease-in-out infinite",
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", maxWidth: 760, margin: "0 auto" }}>
+        <div style={{ position: "relative", maxWidth: 780, margin: "0 auto" }}>
           <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11.5, fontWeight: 700,
-            color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase",
-            background: "var(--bg-card)", padding: "6px 16px", borderRadius: 99, marginBottom: "2rem",
-            border: "1px solid var(--border)",
+            display: "inline-flex", alignItems: "center", gap: 9,
+            fontFamily: "var(--font-mono)", fontSize: 10.5, fontWeight: 500,
+            color: "var(--text-muted)", letterSpacing: "0.16em", textTransform: "uppercase",
+            background: "var(--bg-card)", padding: "7px 16px", borderRadius: 99, marginBottom: "2rem",
+            border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)",
             animation: "bounceIn 0.6s ease-out",
           }}>
-            <span style={{ display: "inline-flex", animation: "wiggle 2.5s ease-in-out infinite" }}>{Icon.globe(13)}</span> Global election intelligence
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--grad-3)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--grad-3) 22%, transparent)" }} />
+            6 elections · {Object.keys(PARTIES).length} parties · 2026–27
           </div>
 
           <h1 style={{
-            fontSize: 60, fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.06,
-            color: "var(--text-primary)", marginBottom: "1.5rem",
+            fontFamily: "var(--font-display)", fontWeight: 400,
+            fontSize: "clamp(44px, 9vw, 76px)", letterSpacing: "-0.01em", lineHeight: 1.02,
+            color: "var(--text-primary)", marginBottom: "1.4rem",
             animation: "floatUp 0.7s ease-out 0.1s both",
           }}>
-            Make An<br />
-            <span style={{
-              background: "linear-gradient(120deg, var(--grad-1), var(--grad-2), var(--grad-3))",
-              backgroundSize: "200% 200%",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              animation: "gradientShift 5s ease infinite",
-              display: "inline-block",
-            }}>INFORMED VOTE</span>
+            Compare the parties.<br />
+            <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Decide for yourself.</span>
           </h1>
-          <p style={{
-            fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
-            color: "var(--text-muted)", marginBottom: "1.75rem",
-            animation: "floatUp 0.7s ease-out 0.15s both",
-          }}>
-            Know before you vote
+
+          <p style={{ fontSize: "clamp(16px, 2.4vw, 18px)", color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 540, margin: "0 auto 1rem", animation: "floatUp 0.7s ease-out 0.2s both" }}>
+            Voteview reads official party platforms and lays their positions side by side — in plain language, no spin, no jargon.
           </p>
 
-          <p style={{ fontSize: 17.5, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 540, margin: "0 auto 1.25rem", animation: "floatUp 0.7s ease-out 0.2s both" }}>
-            Voteview compares political party positions side-by-side, in plain language, straight from official platforms — no spin, no jargon.
-          </p>
-
-          <p style={{ fontSize: 14.5, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 3rem", animation: "floatUp 0.7s ease-out 0.3s both" }}>
-            Start with a short quiz to find your political match, then explore any election on the map.
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 2.75rem", letterSpacing: "0.02em", animation: "floatUp 0.7s ease-out 0.3s both" }}>
+            Take the quiz to find where you fit, then explore any election on the map.
           </p>
 
           {!revealed && (
@@ -858,12 +1122,12 @@ export default function Home() {
           )}
 
           {/* Bento stats grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, maxWidth: 640, margin: "0 auto 2.5rem", animation: "floatUp 0.7s ease-out 0.5s both" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(132px, 1fr))", gap: 12, maxWidth: 640, margin: "0 auto 2.5rem", animation: "floatUp 0.7s ease-out 0.5s both" }}>
             {[
               { end: Object.keys(COUNTRIES).length, label: "Elections tracked", grad: "var(--grad-1)" },
               { end: totalParties, label: "Parties analysed", grad: "var(--grad-2)" },
               { end: totalPositions, label: "Positions extracted", grad: "var(--grad-3)" },
-              { end: 849000000, label: "Voting in 2026", duration: 1500, grad: "var(--grad-4)" },
+              { end: 849000000, label: "Voting in 2026", duration: 1500, grad: "var(--grad-4)", compact: true },
             ].map((s, i) => (
               <div key={i}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px) scale(1.03)"; }}
@@ -873,7 +1137,7 @@ export default function Home() {
                   padding: "1.25rem 0.75rem", borderTop: `3px solid ${s.grad}`,
                   transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)", cursor: "default",
                 }}>
-                <StatCounter end={s.end} label={s.label} duration={s.duration} />
+                <StatCounter end={s.end} label={s.label} duration={s.duration} compact={s.compact} />
               </div>
             ))}
           </div>
@@ -898,11 +1162,11 @@ export default function Home() {
 
       {loading && (
         <div style={{ maxWidth: 1300, margin: "0 auto", padding: "3rem 2rem" }}>
-          <div style={{ height: 24, width: 200, background: "var(--bg-muted)", borderRadius: 8, marginBottom: 12, animation: "pulse 1.4s ease-in-out infinite" }} />
-          <div style={{ height: 36, width: 280, background: "var(--bg-muted)", borderRadius: 8, marginBottom: 28, animation: "pulse 1.4s ease-in-out infinite" }} />
+          <div className="skeleton" style={{ height: 24, width: 200, borderRadius: 8, marginBottom: 12 }} />
+          <div className="skeleton" style={{ height: 36, width: 280, borderRadius: 8, marginBottom: 28 }} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {[1,2,3,4].map(i => (
-              <div key={i} style={{ height: 160, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, animation: "pulse 1.4s ease-in-out infinite" }} />
+              <div key={i} className="skeleton" style={{ height: 160, borderRadius: 16, border: "1px solid var(--border)" }} />
             ))}
           </div>
         </div>
@@ -910,7 +1174,7 @@ export default function Home() {
 
       <div ref={comparatorRef}>
         {data && !loading && (
-          <ComparisonView data={data} country={country} year={year} matchResults={matchResults} />
+          <ComparisonView data={data} country={country} year={year} matchResults={matchResults} quizAnswers={quizAnswers} />
         )}
       </div>
 
