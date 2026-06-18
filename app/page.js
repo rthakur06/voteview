@@ -863,7 +863,7 @@ export default function Home() {
               { end: Object.keys(COUNTRIES).length, label: "Elections tracked", grad: "var(--grad-1)" },
               { end: totalParties, label: "Parties analysed", grad: "var(--grad-2)" },
               { end: totalPositions, label: "Positions extracted", grad: "var(--grad-3)" },
-              { end: 1600000000, label: "Voting in 2026", duration: 3000, grad: "var(--grad-4)" },
+              { end: 849000000, label: "Voting in 2026", duration: 1500, grad: "var(--grad-4)" },
             ].map((s, i) => (
               <div key={i}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px) scale(1.03)"; }}
