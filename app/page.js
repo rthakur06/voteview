@@ -568,11 +568,11 @@ function USMap({ cp, onOpen }) {
 }
 
 /* ---------- Race card ---------- */
-function RaceCard({ race, cp, onOpen }) {
+function RaceCard({ race, cp, onOpen, index = 0 }) {
   const [hover, setHover] = useState(false);
   return (
-    <button onClick={() => onOpen(race)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ textAlign: "left", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.1rem 1.2rem", cursor: "pointer", boxShadow: hover ? "var(--shadow-md)" : "var(--shadow-sm)", transform: hover ? "translateY(-3px)" : "none", transition: "all 0.2s cubic-bezier(0.34,1.56,0.64,1)", width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+    <button onClick={() => onOpen(race)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="press"
+      style={{ textAlign: "left", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.1rem 1.2rem", cursor: "pointer", boxShadow: hover ? "var(--elev-2)" : "var(--elev-1)", transform: hover ? "translateY(-3px)" : "none", transition: "transform 0.22s var(--spring), box-shadow 0.22s var(--ease-out), border-color 0.15s", width: "100%", display: "flex", flexDirection: "column", gap: 12, animation: `staggerIn 0.5s var(--ease-out) ${Math.min(index, 12) * 0.04}s both` }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: "var(--text-muted)" }}>{race.id}</span>
@@ -729,6 +729,97 @@ function ResultBanner({ score, lean, onShare, onRetake, onDismiss }) {
   );
 }
 
+/* ---------- Path to 51: interactive majority tracker ---------- */
+const BG_HELD_D = RACES.filter(r => r.heldBy === "D").length;          // currently-D battlegrounds
+const D_SAFE = (SENATE.D + SENATE.I) - BG_HELD_D;                      // 44
+const R_SAFE = SENATE.R - (RACES.length - BG_HELD_D);                  // 46
+const defaultPick = r => r.rating === "Lean D" ? "D" : r.rating === "Lean R" ? "R" : null;
+
+function SenateScenario({ picks, setPicks, onOpen }) {
+  const called = RACES.reduce((a, r) => { const p = picks[r.id]; if (p === "D") a.d++; else if (p === "R") a.r++; else a.u++; return a; }, { d: 0, r: 0, u: 0 });
+  const D = D_SAFE + called.d, R = R_SAFE + called.r, U = called.u;
+  const demWins = D >= 51;
+  const demNeed = Math.max(0, 51 - D);
+  const pct = n => (n / 100) * 100;
+
+  const set = (id, val) => setPicks(p => ({ ...p, [id]: p[id] === val ? null : val }));
+  const reset = () => setPicks(Object.fromEntries(RACES.map(r => [r.id, defaultPick(r)])));
+
+  return (
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 20, padding: "clamp(1.3rem,3vw,1.8rem)", boxShadow: "var(--elev-2)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
+        <div>
+          <p className="mono-label" style={{ margin: "0 0 5px" }}>Interactive · path to 51</p>
+          <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "clamp(22px,4vw,28px)", color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>Call the races. Watch the math.</h3>
+        </div>
+        <button onClick={reset} className="press" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid var(--border-strong)", background: "var(--bg-muted)", color: "var(--text-secondary)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", minHeight: 38 }}>Reset to forecast</button>
+      </div>
+
+      {/* live count */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ textAlign: "left" }}>
+          <span key={`d${D}`} className="font-mono tnum" style={{ display: "block", fontSize: 40, fontWeight: 700, color: PARTY.D.color, lineHeight: 1, animation: "countPop 0.4s var(--spring)" }}>{D}</span>
+          <span className="mono-label" style={{ margin: "4px 0 0", display: "block" }}>Dem + Ind</span>
+        </div>
+        <div style={{ textAlign: "center", paddingBottom: 4 }}>
+          {U > 0 && <span className="font-mono tnum" style={{ fontSize: 13, color: "var(--text-muted)" }}>{U} undecided</span>}
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <span key={`r${R}`} className="font-mono tnum" style={{ display: "block", fontSize: 40, fontWeight: 700, color: PARTY.R.color, lineHeight: 1, animation: "countPop 0.4s var(--spring)" }}>{R}</span>
+          <span className="mono-label" style={{ margin: "4px 0 0", display: "block", textAlign: "right" }}>Republican</span>
+        </div>
+      </div>
+
+      {/* stacked bar with 51 marker */}
+      <div style={{ position: "relative", height: 26, borderRadius: 7, overflow: "hidden", display: "flex", border: "1px solid var(--border)", marginBottom: 6 }}>
+        <div style={{ width: `${pct(D)}%`, background: PARTY.D.color, transition: "width 0.4s var(--ease-out)" }} />
+        <div style={{ width: `${pct(U)}%`, background: "repeating-linear-gradient(45deg, var(--bg-muted), var(--bg-muted) 6px, var(--border) 6px, var(--border) 12px)", transition: "width 0.4s var(--ease-out)" }} />
+        <div style={{ width: `${pct(R)}%`, background: PARTY.R.color, transition: "width 0.4s var(--ease-out)" }} />
+        <div style={{ position: "absolute", left: "51%", top: -4, bottom: -4, width: 2, background: "var(--text-primary)" }} />
+        <div style={{ position: "absolute", left: "51%", top: -18, transform: "translateX(-50%)", fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, color: "var(--text-primary)" }}>51</div>
+      </div>
+
+      {/* verdict */}
+      <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 11, marginTop: 14, marginBottom: 18, background: demWins ? "color-mix(in srgb, var(--grad-3) 12%, transparent)" : "var(--bg-muted)", border: `1px solid ${demWins ? "color-mix(in srgb, var(--grad-3) 45%, transparent)" : "var(--border)"}` }}>
+        <span style={{ display: "flex", color: demWins ? "var(--grad-3)" : "var(--text-muted)" }}>{demWins ? Icon.check(16) : Icon.flag(15)}</span>
+        <p style={{ fontSize: 13.5, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>
+          {demWins
+            ? <>In this scenario <strong>Democrats flip the Senate</strong> with {D} seats.</>
+            : U === 0
+              ? <><strong>Republicans keep control</strong> — Democrats finish {demNeed} short of a majority.</>
+              : demNeed <= U
+                ? <>Republicans hold for now. Democrats need <strong>{demNeed}</strong> more of the {U} undecided {U === 1 ? "race" : "races"} to reach 51.</>
+                : <>Even winning {U === 1 ? "the last undecided race" : `all ${U} undecided races`}, Democrats reach just <strong>{D + U}</strong> — still {demNeed - U} short. To flip the Senate they&apos;d also have to win a Lean R seat (Texas, Alaska, Iowa or Nebraska).</>}
+        </p>
+      </div>
+
+      {/* race callers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px,1fr))", gap: 8 }}>
+        {RACES.map(r => {
+          const pick = picks[r.id];
+          return (
+            <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px 7px 11px", borderRadius: 11, border: "1px solid var(--border)", background: "var(--bg)" }}>
+              <button onClick={() => onOpen(r)} className="press" title={`Open ${r.state}`} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 7 }}>
+                <span className="font-mono" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", width: 22 }}>{r.id}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.state}</span>
+              </button>
+              <div role="group" aria-label={`Call ${r.state}`} style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+                {["D", "R"].map(side => {
+                  const on = pick === side;
+                  return (
+                    <button key={side} onClick={() => set(r.id, side)} aria-pressed={on} aria-label={`Call ${r.state} for ${PARTY[side].name}`} className="press"
+                      style={{ width: 36, height: 36, borderRadius: 9, border: `1.5px solid ${on ? PARTY[side].color : "var(--border)"}`, background: on ? PARTY[side].color : "transparent", color: on ? "#fff" : "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{side}</button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Home ---------- */
 export default function Home() {
   const [dark, setDark] = useState(true);
@@ -737,6 +828,7 @@ export default function Home() {
   const [showResult, setShowResult] = useState(true);
   const [showCard, setShowCard] = useState(false);
   const [openRace, setOpenRace] = useState(null);
+  const [picks, setPicks] = useState(() => Object.fromEntries(RACES.map(r => [r.id, defaultPick(r)])));
   const { days } = useCountdown(ELECTION_DAY);
 
   useEffect(() => { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); }, [dark]);
@@ -798,6 +890,10 @@ export default function Home() {
         {result && showResult && <ResultBanner score={result.score} lean={result.lean} onShare={() => setShowCard(true)} onRetake={() => setShowQuiz(true)} onDismiss={() => setShowResult(false)} />}
 
         <div style={{ marginBottom: "2rem" }}>
+          <SenateScenario picks={picks} setPicks={setPicks} onOpen={setOpenRace} />
+        </div>
+
+        <div style={{ marginBottom: "2rem" }}>
           <USMap cp={cp} onOpen={setOpenRace} />
         </div>
 
@@ -807,7 +903,7 @@ export default function Home() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px,1fr))", gap: 14 }}>
-          {RACES.map(r => <RaceCard key={r.id} race={r} cp={cp} onOpen={setOpenRace} />)}
+          {RACES.map((r, i) => <RaceCard key={r.id} race={r} cp={cp} onOpen={setOpenRace} index={i} />)}
         </div>
 
         {/* Footer / methodology */}
