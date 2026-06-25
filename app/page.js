@@ -1,1183 +1,827 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { geoCentroid } from "d3-geo";
 
-const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const GEO_URL = "/us-states.json";
+
+/* ============================================================
+   Voteview — 2026 U.S. Senate Battlegrounds
+   A non-partisan tool: compare the candidates, find your lean,
+   and see what's at stake for control of the Senate.
+   ============================================================ */
+
+const DATA_AS_OF = "June 2026";
+const ELECTION_DAY = "2026-11-03T00:00:00-05:00";
+
+// Current Senate standing (post-2024). 53 R, 45 D, 2 independents caucus D.
+const SENATE = { R: 53, D: 45, I: 2, majority: 51, seatsUp: 35, demNeed: 4 };
+
+const PARTY = {
+  D: { name: "Democratic", short: "D", color: "#2b6cb0", soft: "#2b6cb022" },
+  R: { name: "Republican", short: "R", color: "#c5413b", soft: "#c5413b22" },
+  I: { name: "Independent", short: "I", color: "#6b54b8", soft: "#6b54b822" },
+};
+
+const bp = name => `https://ballotpedia.org/wiki/index.php?search=${encodeURIComponent(name)}`;
+
+// Real races + matchups as of June 2026. Candidate-specific issue records are
+// NOT yet verified — see PLATFORM (party-level) below and the corrections flow.
+const RACES = [
+  { id: "GA", state: "Georgia", type: "Regular", rating: "Toss-up", heldBy: "D",
+    stakes: "Democrats' most vulnerable incumbent. A Republican win here widens the GOP majority and lengthens the Democrats' path back.",
+    candidates: [
+      { name: "Jon Ossoff", party: "D", role: "Incumbent", status: "Nominee" },
+      { name: "Mike Collins", party: "R", role: "Challenger", status: "Nominee" },
+    ] },
+  { id: "NC", state: "North Carolina", type: "Regular", rating: "Toss-up", heldBy: "R", open: true,
+    stakes: "An open Republican-held seat and the cycle's marquee toss-up. A Democratic pickup is central to almost every path to the majority.",
+    candidates: [
+      { name: "Roy Cooper", party: "D", role: "Open-seat candidate", status: "Nominee" },
+      { name: "Michael Whatley", party: "R", role: "Open-seat candidate", status: "Nominee" },
+    ] },
+  { id: "ME", state: "Maine", type: "Regular", rating: "Toss-up", heldBy: "R",
+    stakes: "A Republican incumbent in a state Harris won in 2024 — the Democrats' single best flip opportunity.",
+    candidates: [
+      { name: "Graham Platner", party: "D", role: "Challenger", status: "Nominee" },
+      { name: "Susan Collins", party: "R", role: "Incumbent", status: "Nominee" },
+    ] },
+  { id: "MI", state: "Michigan", type: "Regular", rating: "Toss-up", heldBy: "D", open: true,
+    stakes: "An open seat in a true swing state that both parties treat as must-win.",
+    candidates: [
+      { name: "Haley Stevens", party: "D", role: "Open-seat candidate", status: "Primary pending" },
+      { name: "Mike Rogers", party: "R", role: "Open-seat candidate", status: "Presumptive" },
+    ] },
+  { id: "OH", state: "Ohio", type: "Special", rating: "Toss-up", heldBy: "R",
+    stakes: "A special election for the seat JD Vance vacated — a high-profile attempt at a Democratic comeback.",
+    candidates: [
+      { name: "Sherrod Brown", party: "D", role: "Challenger", status: "Nominee" },
+      { name: "Jon Husted", party: "R", role: "Appointed incumbent", status: "Nominee" },
+    ] },
+  { id: "TX", state: "Texas", type: "Regular", rating: "Lean R", heldBy: "R",
+    stakes: "Long a Republican stronghold; an unusual matchup gives Democrats hope of putting it in play.",
+    candidates: [
+      { name: "James Talarico", party: "D", role: "Challenger", status: "Nominee" },
+      { name: "Ken Paxton", party: "R", role: "Open-seat candidate", status: "Nominee" },
+    ] },
+  { id: "IA", state: "Iowa", type: "Regular", rating: "Lean R", heldBy: "R", open: true,
+    stakes: "An open Republican-held seat Democrats call a possible sleeper amid economic discontent.",
+    candidates: [
+      { name: "Josh Turek", party: "D", role: "Open-seat candidate", status: "Nominee" },
+      { name: "Ashley Hinson", party: "R", role: "Open-seat candidate", status: "Nominee" },
+    ] },
+  { id: "NE", state: "Nebraska", type: "Regular", rating: "Lean R", heldBy: "R",
+    stakes: "An independent challenger gives a nominally safe Republican seat unexpected competitiveness.",
+    candidates: [
+      { name: "Dan Osborn", party: "I", role: "Challenger", status: "Nominee" },
+      { name: "Pete Ricketts", party: "R", role: "Incumbent", status: "Nominee" },
+    ] },
+  { id: "AK", state: "Alaska", type: "Regular", rating: "Lean R", heldBy: "R",
+    stakes: "A Republican incumbent faces a well-known statewide challenger in a quirky ranked-choice race.",
+    candidates: [
+      { name: "Mary Peltola", party: "D", role: "Challenger", status: "Nominee" },
+      { name: "Dan Sullivan", party: "R", role: "Incumbent", status: "Nominee" },
+    ] },
+  { id: "NH", state: "New Hampshire", type: "Regular", rating: "Lean D", heldBy: "D", open: true,
+    stakes: "An open, Democratic-leaning seat that two former-senator Republicans are fighting to flip.",
+    candidates: [
+      { name: "Chris Pappas", party: "D", role: "Open-seat candidate", status: "Presumptive" },
+      { name: "John E. Sununu", party: "R", role: "Open-seat candidate", status: "Primary pending" },
+    ] },
+];
+
+const RATING_META = {
+  "Toss-up": { color: "var(--text-primary)", bg: "var(--bg-muted)", label: "Toss-up" },
+  "Lean R": { color: PARTY.R.color, bg: PARTY.R.soft, label: "Lean R" },
+  "Lean D": { color: PARTY.D.color, bg: PARTY.D.soft, label: "Lean D" },
+};
+
+// Issues + general party-platform DIRECTIONS. These are neutral, widely
+// documented generalizations of each party's stated platform — NOT the
+// individual candidate's verified positions, and NOT direct quotes.
+const ISSUES = [
+  { id: "economy", label: "Cost of living", q: "To bring prices down, government should mainly…",
+    D: "Invest in services and child/health costs, and raise taxes on top earners and corporations.",
+    R: "Cut taxes and regulation and lower energy costs to spur growth and ease prices.",
+    opts: [ ["Invest & tax the wealthy", "D"], ["A balance of both", "mix"], ["Cut taxes & regulation", "R"] ] },
+  { id: "immigration", label: "Immigration", q: "On immigration and the border, you favor…",
+    D: "Tighter enforcement paired with legal pathways for some long-resident immigrants and orderly asylum.",
+    R: "Stricter enforcement, more removals, and lower overall immigration.",
+    opts: [ ["Enforcement + legal pathways", "D"], ["Somewhere in between", "mix"], ["Stricter enforcement", "R"] ] },
+  { id: "healthcare", label: "Healthcare", q: "On healthcare, government should…",
+    D: "Protect and expand the Affordable Care Act, lower drug prices, and broaden coverage.",
+    R: "Favor market-based options, more state flexibility, and a smaller federal role.",
+    opts: [ ["Expand public coverage", "D"], ["Mix of public & market", "mix"], ["Market-based, less federal", "R"] ] },
+  { id: "climate", label: "Climate & energy", q: "On energy and climate, you favor…",
+    D: "A clean-energy transition with investment in renewables and limits on emissions.",
+    R: "Expanded domestic oil and gas and fewer new emissions mandates.",
+    opts: [ ["Clean-energy transition", "D"], ["All of the above energy", "mix"], ["Expand oil & gas", "R"] ] },
+  { id: "abortion", label: "Abortion", q: "On abortion, the law should…",
+    D: "Protect access to abortion at the federal level.",
+    R: "Restrict abortion, generally leaving rules to the states.",
+    opts: [ ["Protect access federally", "D"], ["Allow with limits", "mix"], ["Restrict / leave to states", "R"] ] },
+  { id: "democracy", label: "Voting & elections", q: "On running elections, you favor…",
+    D: "Expanding voting access with some federal standards.",
+    R: "Stricter ID and verification rules with elections run by the states.",
+    opts: [ ["Expand voting access", "D"], ["A bit of both", "mix"], ["Stricter ID & verification", "R"] ] },
+];
+
+const LEAN_VAL = { D: -1, mix: 0, R: 1 };
+
+/* Candidate-specific, SOURCED positions. Paraphrased from public reporting as
+   of June 2026. Only the four settled toss-ups are sourced so far; everything
+   else falls back to the party-platform baseline (shown as "Unverified").
+   Each entry: { text, by, url }. */
+const SRC = {
+  ajcO: { by: "AJC", url: "https://www.ajc.com/politics/2026/04/jon-ossoff-a-look-at-the-ajcs-coverage/" },
+  csO: { by: "City & State", url: "https://www.cityandstatepa.com/prediction-markets/candidates/jon-ossoff" },
+  vsO: { by: "Vote Smart", url: "https://justfacts.votesmart.org/candidate/political-courage-test/176134/jon-ossoff" },
+  ajcC: { by: "AJC", url: "https://www.ajc.com/politics/2026/04/mike-collins-a-look-at-the-ajcs-coverage/" },
+  nbcC: { by: "NBC News", url: "https://www.nbcnews.com/politics/2026-election/georgia-senate-midterms-primary-winner-collins-rcna350028" },
+  wralNC: { by: "WRAL", url: "https://www.wral.com/news/nccapitol/election-primary-north-carolina-us-senate-cooper-whately-march-2026/" },
+  bbNC: { by: "Breaking Battlegrounds", url: "https://breakingbattlegrounds.vote/north-carolina-senate-race-2026/" },
+  wuncNC: { by: "WUNC", url: "https://www.wunc.org/term/news/2026-03-03/roy-cooper-michael-whatley-north-carolina-senate" },
+  asmNC: { by: "The Assembly", url: "https://www.theassemblync.com/news/politics/roy-cooper-michael-whatley-senate-nc-2026/" },
+  mms: { by: "Maine Morning Star", url: "https://mainemorningstar.com/voter-guides/contests/2026-democratic-primary/" },
+  wgme: { by: "WGME", url: "https://wgme.com/news/local/planned-parenthood-endorses-graham-platner-while-senator-susan-collins-defends-justice-brett-kavanaugh-support-maine-senate-race-politics-health-healthcare" },
+  prospect: { by: "The American Prospect", url: "https://prospect.org/2026/06/15/graham-platner-susan-collins-maine-senate/" },
+  pf: { by: "PolitiFact", url: "https://www.politifact.com/factchecks/2026/jun/23/susan-collins/Maine-Senate-abortion-Supreme-Court-Kavanaugh/" },
+  cnOH: { by: "Campaign Now", url: "https://www.campaignnow.com/blog/ohios-special-senate-battle-sherrod-brown-vs.-jon-husted" },
+  bfOH: { by: "The Buckeye Flame", url: "https://thebuckeyeflame.com/2026/05/12/sherrod-brown-will-face-anti-transgender-republican-sen-jon-husted-in-bid-for-ohio-senate-seat/" },
+};
+const POSITIONS = {
+  "Jon Ossoff": {
+    economy: { text: "Blames Trump's tariffs and policies for higher costs; voted to cap insulin at $35 and let Medicare negotiate drug prices; backs lower taxes for all but the wealthiest plus targeted relief.", ...SRC.ajcO },
+    immigration: { text: "Supports deporting people who commit crimes and are here illegally, but has investigated and condemned abuses in ICE detention and opposes warrantless raids.", ...SRC.ajcO },
+    healthcare: { text: "Wants to strengthen and expand the Affordable Care Act and extend its subsidies; favors a public option rather than Medicare-for-All; push to lower drug prices.", ...SRC.csO },
+    climate: { text: "Backs accelerating clean energy through federal investment and tax credits, and expanding U.S. solar manufacturing.", ...SRC.csO },
+    abortion: { text: "Supports codifying Roe into federal law; opposes Georgia's six-week ban; backs protections for contraception and IVF.", ...SRC.csO },
+    democracy: { text: "Opposes the Citizens United decision and supports campaign-finance reform.", ...SRC.vsO },
+  },
+  "Mike Collins": {
+    economy: { text: "Favors free markets and deregulation; wants to cut taxes and red tape, lower housing costs, and bring jobs back from overseas; blames Biden-era policy for inflation.", ...SRC.ajcC },
+    immigration: { text: "Lead sponsor of the Laken Riley Act; makes tougher border security and immigration enforcement a central message.", ...SRC.ajcC },
+    healthcare: { text: "Blames the Affordable Care Act for rising costs; voted for rural-hospital funding in the 2025 budget law; wants to limit malpractice lawsuits against providers.", ...SRC.ajcC },
+    climate: { text: "Opposes 'costly' environmental mandates; backs deregulation to speed construction and shield farmers from environmental lawsuits.", ...SRC.ajcC },
+    abortion: { text: "Opposes abortion rights and campaigns as a strong social conservative aligned with Trump.", ...SRC.nbcC },
+  },
+  "Roy Cooper": {
+    economy: { text: "Centers his campaign on affordability — promising to 'make stuff cost less' — and points to job growth during his two terms as governor.", ...SRC.wralNC },
+    healthcare: { text: "Highlights persuading North Carolina's Republican legislature to expand Medicaid; wants to protect coverage and lower costs.", ...SRC.wuncNC },
+    immigration: { text: "Casts himself as a border-security pragmatist who supports deporting violent criminals but opposes mass deportation and indiscriminate sweeps.", ...SRC.bbNC },
+  },
+  "Michael Whatley": {
+    economy: { text: "Runs on an 'America First' agenda of strengthening the economy in alignment with President Trump.", ...SRC.wuncNC },
+    immigration: { text: "Makes border security and immigration enforcement central, praising stepped-up enforcement and pledging to 'back the blue.'", ...SRC.wralNC },
+  },
+  "Graham Platner": {
+    economy: { text: "Runs on affordability and curbing corporate power; backs a billionaire minimum tax, more federal housing support, and banning hedge funds from buying homes.", ...SRC.mms },
+    healthcare: { text: "Supports Medicare for All; opposes cuts to Medicare and Medicaid; wants to break up health-care monopolies, cut drug prices, and reopen shuttered hospitals.", ...SRC.mms },
+    immigration: { text: "Calls for dismantling ICE and ending mass deportations, while pairing border security with paths to citizenship.", ...SRC.mms },
+    climate: { text: "Links energy affordability to reining in fossil-fuel companies and corporate influence in politics.", ...SRC.mms },
+    abortion: { text: "Endorsed by Planned Parenthood; frames health care, including reproductive care, as a human right.", ...SRC.wgme },
+  },
+  "Susan Collins": {
+    economy: { text: "Chairs the Senate Appropriations Committee and emphasizes steering federal funding to Maine; casts herself as an effective, moderate dealmaker.", ...SRC.prospect },
+    healthcare: { text: "Says she has pushed back on cuts to Medicare and defends access to care, including the role of Planned Parenthood health centers.", ...SRC.wgme },
+    abortion: { text: "Co-sponsored a failed bill to codify Roe and says she is disappointed by the Dobbs ruling, while defending her vote to confirm Justice Kavanaugh.", ...SRC.pf },
+  },
+  "Sherrod Brown": {
+    economy: { text: "Built his career on labor and blue-collar workers; campaigns on cost-of-living solutions and is skeptical of trade deals he says hurt American workers.", ...SRC.cnOH },
+    healthcare: { text: "Casts himself as a defender of health-care access and lower costs for working families.", ...SRC.bfOH },
+  },
+  "Jon Husted": {
+    economy: { text: "Runs on economic growth, regulatory relief, and traditional conservative values; a former Ohio secretary of state and lieutenant governor.", ...SRC.cnOH },
+  },
+};
 
 /* ---------- Icons ---------- */
 const Icon = {
-  globe: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>,
-  vote: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="9" width="18" height="12" rx="1.5"/><path d="M7 9V6a5 5 0 0 1 10 0v3"/><path d="M9 14l2 2 4-4"/></svg>,
-  arrowRight: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>,
-  check: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>,
-  sun: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>,
-  moon: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>,
-  close: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
-  chart: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18M7 16l4-4 3 3 5-6"/></svg>,
-  users: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.7"/><path d="M16.5 14.2c2.6.6 4.5 2.6 4.5 5.3"/></svg>,
-  money: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.4-1.2 2-2.5 2.5S9.5 13 9.5 14.5a2.5 2.5 0 0 0 5 0"/><path d="M12 7v1.2M12 15.8V17"/></svg>,
-  heart: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.8 8.6c0 4.3-8.8 10.5-8.8 10.5S3.2 12.9 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3z"/></svg>,
-  leaf: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 21c8-1 13-7 13-15-8 0-13 5-13 13 0 1 0 1.5.4 2z"/><path d="M5 21c.5-3 2.5-7 6-9.5"/></svg>,
-  book: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg>,
-  flag: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/></svg>,
-  news: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="14" height="16" rx="1.5"/><path d="M7 8h6M7 12h6M7 16h3"/><path d="M17 8h2.5A1.5 1.5 0 0 1 21 9.5V18a2 2 0 0 1-2 2h0"/></svg>,
-  link: (s = 11) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M10 14a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1 1"/><path d="M14 10a5 5 0 0 0-7.1 0l-2 2a5 5 0 0 0 7.1 7.1l1-1"/></svg>,
-  warn: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>,
+  vote: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>,
+  arrow: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>,
+  back: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>,
+  check: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6L9 17l-5-5"/></svg>,
+  close: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  sun: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>,
+  moon: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>,
+  link: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 19"/></svg>,
+  warn: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.6 17a2 2 0 001.7 3h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>,
+  shield: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3z"/><path d="M9 12l2 2 4-4"/></svg>,
+  cpu: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>,
+  edit: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>,
+  share: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>,
+  download: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>,
+  image: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg>,
+  scale: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v18M5 7h14M5 7l-3 6h6l-3-6zM19 7l-3 6h6l-3-6zM8 21h8"/></svg>,
+  flag: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22V4M4 4h13l-2 4 2 4H4"/></svg>,
 };
 
-const COUNTRIES = {
-  "Sweden": {
-    flag: "🇸🇪", years: ["2026"], electionDate: "13 September 2026",
-    coordinates: [18.0, 63.0],
-    description: "Sweden's Riksdag election features 8 major parties across the left–right spectrum.",
-    geopolitics: "Sweden's first election as a NATO member, held against a backdrop of Russian aggression in Ukraine and growing concerns about election interference. The result will shape Sweden's defence posture, its role in the Nordic security order, and how far the nationalist right can push immigration and welfare reform. Sweden's Gotland island — described as an 'unsinkable aircraft carrier' in the Baltic Sea — sits less than 300km from Russia's Kaliningrad exclave, making Swedish defence policy acutely consequential.",
-    parties: ["Socialdemokraterna", "Moderaterna", "Sverigedemokraterna", "Centerpartiet", "Vansterpartiet", "Miljopartiet", "Liberalerna", "Kristdemokraterna"],
-    status: "available", newsQuery: "Sweden election 2026 Riksdag"
-  },
-  "Brazil": {
-    flag: "🇧🇷", years: ["2026"], electionDate: "4 October 2026",
-    coordinates: [-51.9, -14.2],
-    description: "Brazil's general election — Lula vs. the Bolsonarista right in the world's fourth-largest democracy.",
-    geopolitics: "Brazil's election will determine whether President Luiz Inácio Lula da Silva secures another term or the Bolsonarista right reclaims power. At stake is Brazil's climate policy, the Amazon, and the health of its democracy after the January 2023 Capitol-style riots.",
-    parties: ["PT - Partido dos Trabalhadores", "PL - Partido Liberal", "PSD - Partido Social Democrático"],
-    status: "available", newsQuery: "Brazil election 2026 Lula Bolsonaro"
-  },
-  "Israel": {
-    flag: "🇮🇱", years: ["2026"], electionDate: "By October 2026",
-    coordinates: [34.8, 31.5],
-    description: "Israel's Knesset election amid ongoing conflict and Netanyahu's political future.",
-    geopolitics: "Israel's election takes place against the backdrop of ongoing regional conflict and a deeply polarised electorate. The result will shape Israel's approach to ceasefire negotiations and relations with the US under Trump.",
-    parties: ["Likud", "Beyachad (Together)", "The Democrats", "Shas"],
-    status: "available", newsQuery: "Israel election 2026 Netanyahu Knesset"
-  },
-  "United States": {
-    flag: "🇺🇸", years: ["2026"], electionDate: "3 November 2026",
-    coordinates: [-98.5, 39.5],
-    description: "US midterm elections — control of Congress and the future of Trump's second-term agenda.",
-    geopolitics: "The 2026 US midterms will determine whether Republicans maintain control of both chambers of Congress or whether Democrats can retake the House or Senate to act as a check on executive power.",
-    parties: ["Republican Party", "Democratic Party"],
-    status: "available", newsQuery: "US midterm elections 2026 Congress"
-  },
-  "Nigeria": {
-    flag: "🇳🇬", years: ["2027"], electionDate: "16 January 2027",
-    coordinates: [8.6, 9.0],
-    description: "Nigeria's general election — Africa's most populous democracy chooses its next president.",
-    geopolitics: "Nigeria is Africa's largest economy and most populous country. The 2027 election will test whether President Tinubu can win re-election after painful economic reforms that have squeezed ordinary Nigerians.",
-    parties: ["APC - All Progressives Congress", "PDP - Peoples Democratic Party", "LP - Labour Party", "ADC - African Democratic Congress"],
-    status: "available", newsQuery: "Nigeria election 2027 Tinubu"
-  },
-  "France": {
-    flag: "🇫🇷", years: ["2027"], electionDate: "April 2027",
-    coordinates: [2.3, 46.2],
-    description: "France's presidential election — a defining moment for Europe's second-largest power.",
-    geopolitics: "France's 2027 presidential election is one of the most consequential in Europe in a generation. With Macron barred from a third term, Marine Le Pen's far-right leads in many polls. A Le Pen presidency would reshape France's relationship with the EU, NATO, and Ukraine.",
-    parties: ["Rassemblement National", "La France Insoumise", "Parti Socialiste", "Renaissance", "Les Républicains", "Europe Écologie Les Verts"],
-    status: "available", newsQuery: "France presidential election 2027 Le Pen"
-  }
-};
-
-const ISSUES = [
-  { key: "Economy & Taxation", icon: "money" },
-  { key: "Healthcare", icon: "heart" },
-  { key: "Climate & Environment", icon: "leaf" },
-  { key: "Immigration", icon: "globe" },
-  { key: "Education", icon: "book" },
-  { key: "Foreign Policy", icon: "flag" }
-];
-
-const PARTIES = {
-  "Socialdemokraterna": { color: "#E8112d", short: "S", spectrum: 25, website: "https://www.socialdemokraterna.se", leader: "Magdalena Andersson", leaderTitle: "Party leader & former Prime Minister", leaderBio: "Sweden's first female PM, Andersson led the country 2021–2022. An economist by training, she is known for fiscal discipline and a strong defence of the welfare state.", partyBio: "Sweden's oldest and historically dominant party. Advocates for a strong welfare state, workers' rights, and publicly funded healthcare and education." },
-  "Moderaterna": { color: "#52BDEC", short: "M", spectrum: 65, website: "https://moderaterna.se", leader: "Ulf Kristersson", leaderTitle: "Prime Minister & party leader", leaderBio: "Current Prime Minister since 2022. A centre-right moderate, Kristersson has focused on crime, energy policy and reducing immigration.", partyBio: "Sweden's main centre-right party. Supports lower taxes, private competition in public services, and market-driven economic policy." },
-  "Sverigedemokraterna": { color: "#c8a400", short: "SD", spectrum: 85, website: "https://sd.se", leader: "Jimmie Åkesson", leaderTitle: "Party leader", leaderBio: "Has led the Sweden Democrats since 2005, transforming it from a fringe party to Sweden's second-largest.", partyBio: "A nationalist party that surged to become a major political force. Prioritises reduced immigration, law and order, and Swedish cultural identity." },
-  "Centerpartiet": { color: "#009933", short: "C", spectrum: 50, website: "https://www.centerpartiet.se", leader: "Elisabeth Thand Ringqvist", leaderTitle: "Party leader", leaderBio: "Took over party leadership in 2025. An entrepreneur and businesswoman focused on rural Sweden and free markets.", partyBio: "Originally an agrarian party, now a liberal-centrist party supporting entrepreneurship, decentralisation, and liberal immigration policy." },
-  "Vansterpartiet": { color: "#9B1C1C", short: "V", spectrum: 10, website: "https://www.vansterpartiet.se", leader: "Nooshi Dadgostar", leaderTitle: "Party leader", leaderBio: "Led the party since 2020. Known for toppling PM Stefan Löfven in a no-confidence vote in 2021.", partyBio: "Sweden's left-socialist party. Advocates for higher taxes on wealth, public ownership, a six-hour workday, and opposition to NATO." },
-  "Miljopartiet": { color: "#83B626", short: "MP", spectrum: 30, website: "https://www.mp.se", leader: "Daniel Helldén & Amanda Lind", leaderTitle: "Co-party leaders", leaderBio: "Helldén focuses on urban sustainability. Lind, a former culture minister, brings regional policy experience.", partyBio: "Sweden's green party. Supports rapid fossil fuel phase-out, generous refugee policy, and reduced working hours." },
-  "Liberalerna": { color: "#006AB3", short: "L", spectrum: 58, website: "https://www.liberalerna.se", leader: "Simona Mohamsson", leaderTitle: "Party leader", leaderBio: "Focuses on individual freedoms, rule of law, and a strong education system.", partyBio: "A classical liberal party championing individual rights, high education standards, EU engagement, and a market economy." },
-  "Kristdemokraterna": { color: "#231F7C", short: "KD", spectrum: 72, website: "https://www.kristdemokraterna.se", leader: "Ebba Busch", leaderTitle: "Deputy Prime Minister & party leader", leaderBio: "Deputy PM in the Kristersson government. Champions family values, Christian democratic principles, and nuclear energy.", partyBio: "A Christian democratic party rooted in family and community values. Supports nuclear power, tougher crime policy, and prioritising care for the elderly." },
-  "PT - Partido dos Trabalhadores": { color: "#CC0000", short: "PT", spectrum: 20, website: "https://pt.org.br", leader: "Luiz Inácio Lula da Silva", leaderTitle: "President & PT candidate", leaderBio: "Known globally as 'Lula', he is seeking an unprecedented fourth term at 80. One of the most consequential politicians in Latin American history.", partyBio: "Brazil's main left-wing party. Focuses on poverty reduction, social programmes like Bolsa Família, workers' rights, and protecting the Amazon." },
-  "PL - Partido Liberal": { color: "#002776", short: "PL", spectrum: 85, website: "https://pl.org.br", leader: "Flávio Bolsonaro", leaderTitle: "Presidential candidate & Senator", leaderBio: "Son of former President Jair Bolsonaro, carrying the Bolsonarista movement's flag in 2026 after his father was barred from running.", partyBio: "Brazil's main right-wing party, home to the Bolsonarista movement. Supports conservative social values, free market economics, and gun rights." },
-  "PSD - Partido Social Democrático": { color: "#00923F", short: "PSD", spectrum: 55, website: "https://psd.org.br", leader: "Ronaldo Caiado", leaderTitle: "Presidential candidate & former Governor", leaderBio: "Former Governor of Goiás, emerging as a centre-right third-way alternative to Lula and Bolsonaro.", partyBio: "A large centrist-right party. Pragmatic and flexible, drawing support from business communities and regional politicians across Brazil." },
-  "Republican Party": { color: "#CC0000", short: "GOP", spectrum: 75, website: "https://www.gop.com", leader: "Donald Trump", leaderTitle: "President & de facto party leader", leaderBio: "47th President of the United States, serving his second term. Remains the dominant force in Republican politics.", partyBio: "The GOP controls the White House, Senate and House. Its 2026 campaign centres on Trump's record — tax cuts, border security, and deregulation." },
-  "Democratic Party": { color: "#003399", short: "DEM", spectrum: 30, website: "https://democrats.org", leader: "Hakeem Jeffries", leaderTitle: "House Minority Leader", leaderBio: "Leader of House Democrats since 2023, attempting to win back the House majority in 2026.", partyBio: "Democrats are on offense in 2026, needing just three seats to retake the House. Campaigning on opposition to Trump's tariffs and Medicaid cuts." },
-  "APC - All Progressives Congress": { color: "#006600", short: "APC", spectrum: 60, website: "https://apc.org.ng", leader: "Bola Tinubu", leaderTitle: "President & APC candidate", leaderBio: "President since 2023, seeking a second term after implementing painful economic reforms including removing Nigeria's fuel subsidy.", partyBio: "Nigeria's ruling party since 2015. A big-tent party defending its record on economic reform, security and infrastructure." },
-  "PDP - Peoples Democratic Party": { color: "#CC0000", short: "PDP", spectrum: 40, website: "https://pdpnigeria.org", leader: "Atiku Abubakar", leaderTitle: "Former Vice President & presidential candidate", leaderBio: "A veteran of Nigerian politics now aligned with Peter Obi's ADC opposition coalition to defeat Tinubu.", partyBio: "Nigeria's main opposition party and former ruling party (1999–2015). Now part of a broad coalition challenging Tinubu." },
-  "LP - Labour Party": { color: "#FF0000", short: "LP", spectrum: 25, website: "https://labourparty.org.ng", leader: "Peter Obi", leaderTitle: "Former presidential candidate, now ADC", leaderBio: "Mobilised millions of young urban voters under the 'Obidient' movement in 2023. Now contesting 2027 under the ADC coalition.", partyBio: "The party that channelled Nigeria's youth protest energy in 2023. Represents a reform-minded, anti-establishment tradition." },
-  "ADC - African Democratic Congress": { color: "#FF6600", short: "ADC", spectrum: 35, website: "https://adcnigeria.org", leader: "Peter Obi", leaderTitle: "Presidential candidate", leaderBio: "Leading the broad opposition coalition against Tinubu in 2027, bringing together former PDP leaders and reform-minded politicians.", partyBio: "The vehicle for a broad opposition coalition aiming to unseat Tinubu in 2027." },
-  "Likud": { color: "#003399", short: "LKD", spectrum: 75, website: "https://www.likud.org.il", leader: "Benjamin Netanyahu", leaderTitle: "Prime Minister & Likud leader", leaderBio: "Israel's longest-serving Prime Minister, currently on trial for corruption while leading the country through intense conflict.", partyBio: "Israel's dominant right-wing party. Supports strong security, settlement expansion, free market economics, and has been sceptical of a two-state solution." },
-  "Beyachad (Together)": { color: "#0099CC", short: "BY", spectrum: 52, website: "https://www.beyachad.org.il", leader: "Naftali Bennett & Yair Lapid", leaderTitle: "Co-leaders", leaderBio: "Former PMs Bennett and Lapid merged their parties in April 2026, polling at ~26 seats — level with Likud.", partyBio: "A new centrist-to-right alliance formed to defeat Netanyahu. Combines Bennett's security focus with Lapid's centrist agenda." },
-  "The Democrats": { color: "#CC3300", short: "DEM", spectrum: 25, website: "https://democrats.org.il", leader: "Yair Golan", leaderTitle: "Party leader", leaderBio: "Former IDF Deputy Chief of Staff turned left-wing politician leading the Democrats — a merger of Labour and Meretz.", partyBio: "Israel's left-wing alliance. Supports a two-state solution, civil rights, reducing ultra-Orthodox political influence, and social democratic economics." },
-  "Shas": { color: "#8B4513", short: "SHS", spectrum: 82, website: "https://www.shas.org.il", leader: "Aryeh Deri", leaderTitle: "Party leader", leaderBio: "A veteran ultra-Orthodox Sephardi politician and key Netanyahu coalition partner controlling ~10 seats.", partyBio: "An ultra-Orthodox Sephardi party. Prioritises religious law, yeshiva funding, exemptions from military service for Orthodox men." },
-  "Rassemblement National": { color: "#003189", short: "RN", spectrum: 88, website: "https://www.rassemblementnational.fr", leader: "Marine Le Pen", leaderTitle: "Party leader", leaderBio: "Has led the RN since 2011, transforming it into France's most popular party by vote share.", partyBio: "France's main nationalist party. Advocates for strict immigration limits, national preference in jobs and benefits, and reclaiming sovereignty from the EU." },
-  "La France Insoumise": { color: "#CC2443", short: "LFI", spectrum: 8, website: "https://lafranceinsoumise.fr", leader: "Jean-Luc Mélenchon", leaderTitle: "Founder & party leader", leaderBio: "A veteran of the French left who founded LFI in 2016 and has twice come close to reaching the presidential runoff.", partyBio: "France's hard-left party. Advocates for heavy wealth taxes, universal basic income, exit from NATO's integrated command." },
-  "Parti Socialiste": { color: "#E75480", short: "PS", spectrum: 28, website: "https://www.parti-socialiste.fr", leader: "Olivier Faure", leaderTitle: "First Secretary", leaderBio: "Has led the PS since 2018 through a period of rebuilding after the party's collapse under Hollande.", partyBio: "France's historic centre-left party. Supports a strong welfare state, managed immigration, EU membership, and gradual green transition." },
-  "Renaissance": { color: "#F7A800", short: "REN", spectrum: 52, website: "https://parti-renaissance.fr", leader: "Gabriel Attal", leaderTitle: "Party leader & former Prime Minister", leaderBio: "France's youngest ever Prime Minister at 34, seen as Macron's chosen successor.", partyBio: "Macron's centrist party. Supports a liberal market economy, deep EU integration, nuclear energy alongside renewables." },
-  "Les Républicains": { color: "#0066CC", short: "LR", spectrum: 68, website: "https://www.republicains.fr", leader: "Laurent Wauquiez", leaderTitle: "Party leader", leaderBio: "Returned to lead LR in 2022, positioning the party further right on immigration and security.", partyBio: "France's traditional centre-right party. Supports lower taxes, strict immigration control, nuclear energy, NATO, and tougher law and order." },
-  "Europe Écologie Les Verts": { color: "#00A650", short: "EELV", spectrum: 22, website: "https://www.eelv.fr", leader: "Marine Tondelier", leaderTitle: "National Secretary", leaderBio: "Took over EELV leadership in 2023, bringing a more grassroots style to the Greens.", partyBio: "France's green party. Puts climate at the centre of all policy, supports phasing out nuclear power and open immigration." },
-};
-
-const QUIZ_QUESTIONS = [
-  { id: "economy", question: "What's your view on taxation and public spending?", options: [ { label: "Tax the wealthy more to fund stronger public services for everyone", value: "left" }, { label: "Keep a balance between taxation and spending — neither extreme", value: "centre" }, { label: "Lower taxes and let individuals and markets decide how money is spent", value: "right" } ] },
-  { id: "immigration", question: "How should your country approach immigration?", options: [ { label: "Welcome immigrants openly — diversity strengthens society", value: "open" }, { label: "Manage immigration carefully with clear rules and integration support", value: "moderate" }, { label: "Significantly reduce immigration to protect national culture and jobs", value: "restrictive" } ] },
-  { id: "climate", question: "What's your priority on climate and energy?", options: [ { label: "Move as fast as possible to renewable energy, even if it's costly short-term", value: "green" }, { label: "Transition gradually, balancing green goals with economic stability", value: "balanced" }, { label: "Protect existing industries and jobs first — don't rush the transition", value: "cautious" } ] },
-  { id: "welfare", question: "How should healthcare and education be run?", options: [ { label: "Fully publicly funded and run — no private profit in essential services", value: "public" }, { label: "Mostly public, but private options can help improve quality and choice", value: "mixed" }, { label: "More private competition drives up quality and reduces government waste", value: "private" } ] },
-  { id: "authority", question: "On law, order and individual freedom?", options: [ { label: "Individual rights and civil liberties should be strongly protected", value: "liberal" }, { label: "Balance personal freedoms with strong community standards", value: "moderate" }, { label: "Strong law enforcement and social order should come first", value: "authoritarian" } ] },
-  { id: "international", question: "How should your country engage with the world?", options: [ { label: "Deep international cooperation — global problems need global solutions", value: "globalist" }, { label: "Engage internationally but protect national interests and sovereignty", value: "moderate" }, { label: "Put our country first — be sceptical of international institutions", value: "nationalist" } ] }
-];
-
-const ISSUE_FOR_Q = {
-  economy: "Economy",
-  immigration: "Immigration",
-  climate: "Climate",
-  welfare: "Public services",
-  authority: "Civil liberties",
-  international: "Foreign policy",
-};
-
-const PARTY_MATCH_RULES = {
-  "Vansterpartiet":     { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist" },
-  "Socialdemokraterna": { economy: "left",   immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist" },
-  "Miljopartiet":       { economy: "centre", immigration: "open",        climate: "green",    welfare: "mixed",   authority: "liberal",       international: "globalist" },
-  "Centerpartiet":      { economy: "right",  immigration: "open",        climate: "balanced", welfare: "mixed",   authority: "liberal",       international: "globalist" },
-  "Liberalerna":        { economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "liberal",       international: "globalist" },
-  "Moderaterna":        { economy: "right",  immigration: "moderate",    climate: "balanced", welfare: "private", authority: "moderate",      international: "moderate"  },
-  "Kristdemokraterna":  { economy: "right",  immigration: "moderate",    climate: "balanced", welfare: "private", authority: "authoritarian", international: "moderate"  },
-  "Sverigedemokraterna":{ economy: "centre", immigration: "restrictive", climate: "cautious", welfare: "mixed",   authority: "authoritarian", international: "nationalist"},
-  "PT - Partido dos Trabalhadores":  { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist"  },
-  "PL - Partido Liberal":            { economy: "right",  immigration: "moderate",    climate: "cautious", welfare: "private", authority: "authoritarian", international: "nationalist"},
-  "PSD - Partido Social Democrático":{ economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "moderate"   },
-  "Republican Party":                { economy: "right",  immigration: "restrictive", climate: "cautious", welfare: "private", authority: "authoritarian", international: "nationalist"},
-  "Democratic Party":                { economy: "left",   immigration: "open",        climate: "green",    welfare: "mixed",   authority: "liberal",       international: "globalist"  },
-  "APC - All Progressives Congress": { economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "moderate"   },
-  "PDP - Peoples Democratic Party":  { economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist"  },
-  "LP - Labour Party":               { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist"  },
-  "ADC - African Democratic Congress":{ economy: "centre",immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "liberal",       international: "globalist"  },
-  "Likud":                           { economy: "right",  immigration: "restrictive", climate: "cautious", welfare: "mixed",   authority: "authoritarian", international: "nationalist"},
-  "Beyachad (Together)":             { economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "moderate"   },
-  "The Democrats":                   { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "globalist"  },
-  "Shas":                            { economy: "centre", immigration: "restrictive", climate: "cautious", welfare: "mixed",   authority: "authoritarian", international: "nationalist"},
-  "Rassemblement National":          { economy: "centre", immigration: "restrictive", climate: "cautious", welfare: "mixed",   authority: "authoritarian", international: "nationalist"},
-  "La France Insoumise":             { economy: "left",   immigration: "open",        climate: "green",    welfare: "public",  authority: "liberal",       international: "nationalist"},
-  "Parti Socialiste":                { economy: "left",   immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist"  },
-  "Renaissance":                     { economy: "centre", immigration: "moderate",    climate: "balanced", welfare: "mixed",   authority: "moderate",      international: "globalist"  },
-  "Les Républicains":                { economy: "right",  immigration: "restrictive", climate: "balanced", welfare: "private", authority: "authoritarian", international: "moderate"   },
-  "Europe Écologie Les Verts":       { economy: "centre", immigration: "open",        climate: "green",    welfare: "mixed",   authority: "liberal",       international: "globalist"  },
-};
-
-function computeMatch(answers, countryParties) {
-  const scores = {};
-  for (const party of countryParties) {
-    const rules = PARTY_MATCH_RULES[party];
-    if (!rules) continue;
-    let score = 0;
-    for (const [q, val] of Object.entries(answers)) {
-      if (rules[q] === val) score++;
-    }
-    scores[party] = score;
-  }
-  return Object.entries(scores)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([party, score]) => ({ party, score, pct: Math.round((score / QUIZ_QUESTIONS.length) * 100) }));
+/* ---------- Helpers ---------- */
+function leanLabel(score) {
+  if (score == null) return null;
+  if (score < -0.55) return "Strong Democratic lean";
+  if (score < -0.18) return "Democratic lean";
+  if (score <= 0.18) return "Split / independent-leaning";
+  if (score <= 0.55) return "Republican lean";
+  return "Strong Republican lean";
 }
-
-/* ---------- Political compass ---------- */
-// Two axes derived from the same answer dimensions used for matching.
-// x: economic  (-1 left … +1 right)   from economy + welfare
-// y: social    (-1 open/liberal … +1 controlled/authoritarian) from authority + immigration + international
-const AXIS_SCORE = {
-  economy:       { left: -1, centre: 0, right: 1 },
-  welfare:       { public: -1, mixed: 0, private: 1 },
-  authority:     { liberal: -1, moderate: 0, authoritarian: 1 },
-  immigration:   { open: -1, moderate: 0, restrictive: 1 },
-  international: { globalist: -1, moderate: 0, nationalist: 1 },
-};
-
-function computeCompass(rules) {
-  if (!rules) return null;
-  const econVals = ["economy", "welfare"].map(k => AXIS_SCORE[k]?.[rules[k]]).filter(v => v != null);
-  const socVals = ["authority", "immigration", "international"].map(k => AXIS_SCORE[k]?.[rules[k]]).filter(v => v != null);
-  if (!econVals.length || !socVals.length) return null;
-  const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
-  return { x: avg(econVals), y: avg(socVals) };
+function closerParty(score) {
+  if (score == null || Math.abs(score) <= 0.12) return null;
+  return score < 0 ? "D" : "R";
 }
-
-const QUADRANT_LABELS = [
-  { x: -1, y: -1, label: "Libertarian left" },
-  { x: 1, y: -1, label: "Libertarian right" },
-  { x: -1, y: 1, label: "Authoritarian left" },
-  { x: 1, y: 1, label: "Authoritarian right" },
-];
-
-function PoliticalCompass({ parties, userPos, country }) {
-  const [hover, setHover] = useState(null);
-  const SIZE = 460, PAD = 46, INNER = SIZE - PAD * 2;
-  // collision-aware label nudging done visually with small offsets per party
-  const toPx = (x, y) => ({
-    cx: PAD + ((x + 1) / 2) * INNER,
-    cy: PAD + ((1 - y) / 2) * INNER, // +y (authoritarian) at top, -y (libertarian) at bottom
-  });
-
-  const points = parties
-    .map(party => {
-      const pos = computeCompass(PARTY_MATCH_RULES[party]);
-      if (!pos) return null;
-      const p = PARTIES[party] || { color: "#888", short: "?" };
-      return { party, color: p.color, short: p.short, ...pos, ...toPx(pos.x, pos.y) };
-    })
-    .filter(Boolean);
-
-  // jitter overlapping dots a little so labels stay readable
-  for (let i = 0; i < points.length; i++) {
-    for (let j = i + 1; j < points.length; j++) {
-      const dx = points[i].cx - points[j].cx, dy = points[i].cy - points[j].cy;
-      const d = Math.hypot(dx, dy);
-      if (d < 26 && d > 0) {
-        const push = (26 - d) / 2;
-        const ux = dx / d, uy = dy / d;
-        points[i].cx += ux * push; points[i].cy += uy * push;
-        points[j].cx -= ux * push; points[j].cy -= uy * push;
-      }
-    }
-  }
-
-  const userPx = userPos ? toPx(userPos.x, userPos.y) : null;
-
+function PartyAvatar({ party, size = 40 }) {
+  const p = PARTY[party] || PARTY.I;
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.6rem 1.75rem 1.4rem", marginBottom: "2rem", boxShadow: "var(--shadow-sm)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 18 }}>
-        <div>
-          <p className="mono-label" style={{ margin: "0 0 6px" }}>Fig. 01 — Political compass</p>
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 27, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.1 }}>
-            Where the parties land
-          </h3>
-        </div>
-        {userPx && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--accent-soft)", border: "1px solid var(--accent)", borderRadius: 99, padding: "6px 13px" }}>
-            <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 0 3px var(--accent-soft)" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent-ink)" }}>You are plotted here</span>
-          </div>
-        )}
+    <span style={{ width: size, height: size, borderRadius: "50%", background: p.color, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: size * 0.4, flexShrink: 0 }}>{p.short}</span>
+  );
+}
+function initials(name) {
+  return name.split(" ").map(w => w[0]).slice(0, 2).join("");
+}
+function RatingPill({ rating }) {
+  const m = RATING_META[rating] || RATING_META["Toss-up"];
+  return <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: m.color, background: m.bg, border: `1px solid ${m.color}33`, padding: "3px 9px", borderRadius: 99 }}>{m.label}</span>;
+}
+
+/* ---------- Senate control bar ---------- */
+function SenateControl() {
+  const total = 100;
+  const dAligned = SENATE.D + SENATE.I;
+  const pct = n => (n / total) * 100;
+  return (
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.5rem 1.6rem", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        <p className="mono-label" style={{ margin: 0 }}>Balance of power · current Senate</p>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-muted)", margin: 0 }}>{SENATE.seatsUp} seats up Nov 3</p>
       </div>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 22, alignItems: "stretch" }}>
-        <div style={{ position: "relative", flex: "1 1 380px", minWidth: 280, maxWidth: SIZE + 30 }}>
-          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}>
-            {/* quadrant fills */}
-            <rect x={PAD} y={PAD} width={INNER / 2} height={INNER / 2} fill="var(--compass-quad)" />
-            <rect x={PAD + INNER / 2} y={PAD + INNER / 2} width={INNER / 2} height={INNER / 2} fill="var(--compass-quad)" />
-            {/* grid */}
-            {[0, 0.25, 0.5, 0.75, 1].map(t => (
-              <g key={t}>
-                <line x1={PAD + t * INNER} y1={PAD} x2={PAD + t * INNER} y2={PAD + INNER} stroke="var(--compass-grid)" strokeWidth={t === 0.5 ? 0 : 1} />
-                <line x1={PAD} y1={PAD + t * INNER} x2={PAD + INNER} y2={PAD + t * INNER} stroke="var(--compass-grid)" strokeWidth={t === 0.5 ? 0 : 1} />
-              </g>
-            ))}
-            {/* outer frame */}
-            <rect x={PAD} y={PAD} width={INNER} height={INNER} fill="none" stroke="var(--border-strong)" strokeWidth={1.2} rx={4} />
-            {/* axes */}
-            <line x1={PAD} y1={PAD + INNER / 2} x2={PAD + INNER} y2={PAD + INNER / 2} stroke="var(--compass-axis)" strokeWidth={1.4} />
-            <line x1={PAD + INNER / 2} y1={PAD} x2={PAD + INNER / 2} y2={PAD + INNER} stroke="var(--compass-axis)" strokeWidth={1.4} />
-
-            {/* axis captions */}
-            <text x={PAD - 8} y={PAD + INNER / 2} textAnchor="end" dominantBaseline="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)" style={{ textTransform: "uppercase" }}>LEFT</text>
-            <text x={PAD + INNER + 8} y={PAD + INNER / 2} textAnchor="start" dominantBaseline="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">RIGHT</text>
-            <text x={PAD + INNER / 2} y={PAD - 12} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">AUTHORITARIAN</text>
-            <text x={PAD + INNER / 2} y={PAD + INNER + 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="1" fill="var(--text-muted)">LIBERTARIAN</text>
-
-            {/* quadrant labels */}
-            {QUADRANT_LABELS.map(q => {
-              const { cx, cy } = toPx(q.x * 0.62, q.y * 0.62);
-              return <text key={q.label} x={cx} y={cy} textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text-faint)" style={{ pointerEvents: "none" }}>{q.label}</text>;
-            })}
-
-            {/* party dots */}
-            {points.map((pt, i) => {
-              const active = hover === pt.party;
-              return (
-                <g key={pt.party}
-                  onMouseEnter={() => setHover(pt.party)}
-                  onMouseLeave={() => setHover(null)}
-                  style={{ cursor: "default", animation: `popDot 0.5s cubic-bezier(0.34,1.56,0.64,1) ${0.05 * i}s both` }}>
-                  <circle cx={pt.cx} cy={pt.cy} r={active ? 11 : 8} fill={pt.color} stroke="var(--bg-card)" strokeWidth={2.5} style={{ transition: "r 0.15s" }} />
-                  <text x={pt.cx} y={pt.cy} textAnchor="middle" dominantBaseline="central" fontFamily="var(--font-mono)" fontSize="8" fontWeight="700" fill="#fff" style={{ pointerEvents: "none" }}>{pt.short}</text>
-                  {active && (
-                    <text x={pt.cx} y={pt.cy - 16} textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--text-primary)" style={{ pointerEvents: "none" }}>{pt.party}</text>
-                  )}
-                </g>
-              );
-            })}
-
-            {/* user marker */}
-            {userPx && (
-              <g style={{ animation: "popDot 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.45s both" }}>
-                <circle cx={userPx.cx} cy={userPx.cy} r={16} fill="none" stroke="var(--accent)" strokeOpacity={0.4} strokeWidth={1.5} style={{ transformOrigin: `${userPx.cx}px ${userPx.cy}px`, animation: "ring 1.8s ease-out infinite" }} />
-                <circle cx={userPx.cx} cy={userPx.cy} r={9} fill="var(--accent)" stroke="var(--bg-card)" strokeWidth={3} />
-                <text x={userPx.cx} y={userPx.cy - 18} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fontWeight="700" letterSpacing="0.5" fill="var(--accent-ink)">YOU</text>
-              </g>
-            )}
-          </svg>
+      <div style={{ position: "relative", height: 30, borderRadius: 8, overflow: "hidden", display: "flex", border: "1px solid var(--border)" }}>
+        <div style={{ width: `${pct(dAligned)}%`, background: PARTY.D.color, display: "flex", alignItems: "center", paddingLeft: 10 }}>
+          <span style={{ color: "#fff", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{dAligned}</span>
         </div>
-
-        <div style={{ flex: "1 1 240px", minWidth: 220, display: "flex", flexDirection: "column" }}>
-          <p className="mono-label" style={{ margin: "0 0 12px" }}>Reading the grid</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {[...points].sort((a, b) => a.x - b.x).map(pt => {
-              const q = quadrantLabel({ x: pt.x, y: pt.y });
-              const active = hover === pt.party;
-              return (
-                <div key={pt.party}
-                  onMouseEnter={() => setHover(pt.party)}
-                  onMouseLeave={() => setHover(null)}
-                  style={{ display: "flex", alignItems: "center", gap: 11, padding: "7px 10px", borderRadius: 9, background: active ? "var(--bg-muted)" : "transparent", transition: "background 0.15s", cursor: "default" }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: pt.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{pt.short}</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", flex: 1, lineHeight: 1.25, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pt.party}</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{q}</span>
-                </div>
-              );
-            })}
-          </div>
+        <div style={{ width: `${pct(SENATE.R)}%`, background: PARTY.R.color, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10 }}>
+          <span style={{ color: "#fff", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{SENATE.R}</span>
         </div>
+        {/* majority line at 51 */}
+        <div style={{ position: "absolute", left: "51%", top: -3, bottom: -3, width: 2, background: "var(--text-primary)" }} />
       </div>
-
-      <p style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--text-faint)", margin: "8px 0 0", lineHeight: 1.6 }}>
-        Axes are modelled from each party&apos;s stated positions, not vote-share. Positions are approximate and editorial.
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11.5, color: "var(--text-muted)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 2, background: PARTY.D.color }} /> Democrats + 2 independents</span>
+        <span style={{ fontFamily: "var(--font-mono)" }}>51 = majority</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>Republicans <span style={{ width: 9, height: 9, borderRadius: 2, background: PARTY.R.color }} /></span>
+      </div>
+      <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "14px 0 0", paddingTop: 14, borderTop: "1px solid var(--border-light)" }}>
+        Republicans hold a <strong style={{ color: "var(--text-primary)" }}>{SENATE.R}–{dAligned}</strong> edge. To take the majority, Democrats must net <strong style={{ color: PARTY.D.color }}>{SENATE.demNeed} seats</strong> — a 50–50 tie is broken by the Republican vice president. The {RACES.length} races below are where that math gets decided.
       </p>
     </div>
   );
 }
 
-/* ---------- Shared components ---------- */
+/* ---------- Countdown ---------- */
+function useCountdown(target) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
+  const diff = Math.max(0, new Date(target).getTime() - now);
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  return { days, hours, done: diff === 0 };
+}
 
-function Avatar({ party, size = 34 }) {
-  const p = PARTIES[party] || { color: "#888", short: "?" };
+/* ---------- Provenance + corrections ---------- */
+function CorrectionModal({ race, party, issue, onClose }) {
+  const [form, setForm] = useState({ problem: "", correction: "", source: "", email: "" });
+  const [state, setState] = useState("idle");
+  const upd = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+  async function submit() {
+    if (!form.problem.trim()) return;
+    setState("sending");
+    try {
+      const res = await fetch("/api/corrections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ country: "US", party: PARTY[party]?.name, issue: `${race} — ${issue}`, ...form }) });
+      setState(res.ok ? "done" : "error");
+    } catch { setState("error"); }
+  }
+  function copyReport() {
+    const txt = [`Voteview correction`, `Race: ${race}`, `Party/candidate: ${party}`, `Issue: ${issue}`, `Problem: ${form.problem}`, form.correction ? `Correct: ${form.correction}` : null, form.source ? `Source: ${form.source}` : null].filter(Boolean).join("\n");
+    navigator.clipboard?.writeText(txt).catch(() => {}); setState("done");
+  }
+  const field = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)", fontSize: 13.5, fontFamily: "inherit", lineHeight: 1.5, resize: "vertical" };
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: p.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.28, fontWeight: 700, flexShrink: 0, letterSpacing: "0.01em" }}>
-      {p.short}
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 340, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem", animation: "fadeIn 0.2s ease-out" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", borderRadius: 20, padding: "1.6rem 1.7rem", maxWidth: 500, width: "100%", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}><span style={{ display: "flex", color: "var(--accent)" }}>{Icon.edit(16)}</span><h3 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 23, color: "var(--text-primary)", margin: 0 }}>Suggest a correction</h3></div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex" }}>{Icon.close(18)}</button>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 16px", lineHeight: 1.55 }}>{race} · {issue}. Help us source a candidate's actual record — ideally with a link to an official statement or vote.</p>
+        {state === "done" ? (
+          <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
+            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--accent-soft)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>{Icon.check(22)}</div>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>Thank you</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>Recorded for review.</p>
+            <button onClick={onClose} style={{ marginTop: 18, padding: "10px 22px", borderRadius: 11, border: "none", background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Close</button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div><label className="mono-label" style={{ display: "block", marginBottom: 6 }}>What&apos;s wrong or missing? *</label><textarea value={form.problem} onChange={upd("problem")} rows={2} placeholder="e.g. This candidate has actually said the opposite on this." style={field} /></div>
+            <div><label className="mono-label" style={{ display: "block", marginBottom: 6 }}>The candidate&apos;s actual position</label><textarea value={form.correction} onChange={upd("correction")} rows={2} style={field} /></div>
+            <div><label className="mono-label" style={{ display: "block", marginBottom: 6 }}>Source link</label><input value={form.source} onChange={upd("source")} placeholder="https://…" style={field} /></div>
+            <div><label className="mono-label" style={{ display: "block", marginBottom: 6 }}>Your email (optional)</label><input value={form.email} onChange={upd("email")} style={field} /></div>
+            {state === "error" && <p style={{ fontSize: 12.5, color: PARTY.R.color, margin: 0 }}>Couldn&apos;t reach the server — copy the report and email it instead.</p>}
+            <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+              <button onClick={submit} disabled={!form.problem.trim() || state === "sending"} style={{ flex: 1, padding: "12px", borderRadius: 11, border: "none", background: form.problem.trim() ? "var(--accent)" : "var(--bg-muted)", color: form.problem.trim() ? "#fff" : "var(--text-faint)", fontSize: 14, fontWeight: 700, cursor: form.problem.trim() ? "pointer" : "not-allowed" }}>{state === "sending" ? "Sending…" : "Submit"}</button>
+              <button onClick={copyReport} style={{ padding: "12px 16px", borderRadius: 11, border: "1px solid var(--border-strong)", background: "var(--bg-muted)", color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>{Icon.link(13)} Copy</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function PartyPill({ party, active, onClick }) {
-  const p = PARTIES[party] || { color: "#888", short: "?" };
+function UnverifiedBadge({ race, party, issue }) {
+  const [open, setOpen] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
   return (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px 6px 6px", borderRadius: 99, cursor: "pointer", border: `1.5px solid ${active ? p.color : "var(--border)"}`, background: active ? p.color + "16" : "transparent", color: active ? "var(--text-primary)" : "var(--text-muted)", fontSize: 13, fontWeight: 500, transition: "all 0.18s ease" }}>
-      <div style={{ width: 22, height: 22, borderRadius: "50%", background: active ? p.color : "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "white", fontWeight: 700 }}>{p.short}</div>
-      {party}
-    </button>
+    <span style={{ position: "relative", display: "inline-flex" }}>
+      {correcting && <CorrectionModal race={race} party={party} issue={issue} onClose={() => { setCorrecting(false); setOpen(false); }} />}
+      <button onClick={() => setOpen(o => !o)} title="Party-platform baseline — not verified for this candidate"
+        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 8px", borderRadius: 99, border: "1px solid var(--border)", background: "var(--bg-muted)", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 600, letterSpacing: "0.04em", cursor: "pointer", textTransform: "uppercase" }}>
+        {Icon.cpu(9)} Unverified
+      </button>
+      {open && (
+        <>
+          <span onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
+          <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 61, width: 250, background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, boxShadow: "var(--shadow-md)", padding: "12px 13px" }}>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 10px", lineHeight: 1.5 }}>This shows the <strong>general party-platform direction</strong>, not this candidate&apos;s verified record. We&apos;re sourcing candidate-specific positions.</p>
+            <button onClick={() => setCorrecting(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "var(--accent-ink)", background: "none", border: "none", padding: 0, cursor: "pointer" }}>{Icon.edit(11)} Add a sourced position</button>
+          </div>
+        </>
+      )}
+    </span>
   );
 }
 
-function IssuePill({ issue, active, onClick }) {
-  return (
-    <button onClick={onClick} style={{ padding: "7px 16px", borderRadius: 99, fontSize: 13, cursor: "pointer", fontWeight: 500, border: `1.5px solid ${active ? "var(--text-primary)" : "var(--border)"}`, background: active ? "var(--text-primary)" : "transparent", color: active ? "var(--bg)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 7, transition: "all 0.18s ease" }}>
-      {issue.icon ? Icon[issue.icon](14) : null}{issue.key}
-    </button>
-  );
-}
+/* ---------- Quiz (weighted) ---------- */
+const WEIGHTS = [ { v: 1, label: "A little" }, { v: 2, label: "Important" }, { v: 3, label: "Crucial" } ];
 
 function QuizModal({ onComplete, onClose }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [weights, setWeights] = useState({});
+  const q = ISSUES[step];
+  const isLast = step === ISSUES.length - 1;
+  const chosen = answers[q.id];
+  const weight = weights[q.id] ?? 2;
+  const progress = ((step + (chosen ? 1 : 0)) / ISSUES.length) * 100;
 
-  function handleAnswer(questionId, value) {
-    const newAnswers = { ...answers, [questionId]: value };
-    setAnswers(newAnswers);
-    if (step < QUIZ_QUESTIONS.length - 1) setStep(step + 1);
-    else onComplete(newAnswers);
-  }
-
-  const q = QUIZ_QUESTIONS[step];
-  const progress = (step / QUIZ_QUESTIONS.length) * 100;
+  function choose(v) { setAnswers(a => ({ ...a, [q.id]: v })); setWeights(w => ({ ...w, [q.id]: w[q.id] ?? 2 })); }
+  function next() { if (isLast) onComplete({ answers, weights }); else setStep(s => s + 1); }
+  function skip() { const na = { ...answers }; delete na[q.id]; const nw = { ...weights, [q.id]: 0 }; setAnswers(na); setWeights(nw); if (isLast) onComplete({ answers: na, weights: nw }); else setStep(s => s + 1); }
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-      <div style={{ background: "var(--bg-card)", borderRadius: 24, padding: "2.25rem", maxWidth: 540, width: "100%", border: "1px solid var(--border)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.07em", textTransform: "uppercase" }}>Question {step + 1} of {QUIZ_QUESTIONS.length}</span>
-          <button onClick={onClose} aria-label="Close quiz" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", borderRadius: 8 }}>{Icon.close(18)}</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.62)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem", animation: "fadeIn 0.2s ease-out" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 24, padding: "clamp(1.5rem,4vw,2.25rem)", maxWidth: 560, width: "100%", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.4rem" }}>
+          <span className="mono-label">Question {step + 1} / {ISSUES.length} · {q.label}</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex" }}>{Icon.close(18)}</button>
         </div>
-        <div style={{ height: 4, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.75rem", overflow: "hidden" }}>
-          <div style={{ height: "100%", borderRadius: 99, background: "var(--accent)", width: `${progress}%`, transition: "width 0.35s ease" }} />
-        </div>
-        <h2 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", marginBottom: "1.5rem", lineHeight: 1.35 }}>{q.question}</h2>
+        <div style={{ height: 4, background: "var(--bg-muted)", borderRadius: 99, marginBottom: "1.6rem", overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 99, background: "var(--accent)", width: `${progress}%`, transition: "width 0.35s ease" }} /></div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px,5vw,28px)", fontWeight: 400, color: "var(--text-primary)", marginBottom: "1.2rem", lineHeight: 1.2 }}>{q.q}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {q.options.map(opt => (
-            <button key={opt.value} onClick={() => handleAnswer(q.id, opt.value)}
-              style={{ padding: "15px 18px", borderRadius: 14, cursor: "pointer", border: "1.5px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)", fontSize: 14, textAlign: "left", fontWeight: 500, transition: "all 0.18s ease", lineHeight: 1.45 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.background = "var(--bg-muted)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg)"; }}
-            >{opt.label}</button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function quadrantLabel(pos) {
-  if (!pos) return null;
-  const ew = Math.abs(pos.x) < 0.18 ? "centrist" : pos.x < 0 ? "left" : "right";
-  const ns = Math.abs(pos.y) < 0.18 ? "moderate" : pos.y < 0 ? "libertarian" : "authoritarian";
-  if (ew === "centrist" && ns === "moderate") return "Centre ground";
-  if (ew === "centrist") return ns[0].toUpperCase() + ns.slice(1) + " centre";
-  if (ns === "moderate") return "Moderate " + ew;
-  return ns[0].toUpperCase() + ns.slice(1) + " " + ew;
-}
-
-function MatchBanner({ matches, answers, country, onDismiss }) {
-  const [copied, setCopied] = useState(false);
-  if (!matches || matches.length === 0) return null;
-  const top = matches[0];
-  const p = PARTIES[top.party] || { color: "#888" };
-  const userPos = answers ? computeCompass(answers) : null;
-  const quad = quadrantLabel(userPos);
-
-  // per-dimension agreement vs top match
-  const rules = PARTY_MATCH_RULES[top.party] || {};
-  const breakdown = answers ? QUIZ_QUESTIONS.map(q => ({
-    label: ISSUE_FOR_Q[q.id] || q.id,
-    agree: rules[q.id] === answers[q.id],
-  })) : [];
-
-  function share() {
-    const lines = [
-      `My Voteview political match${country ? ` (${country})` : ""}:`,
-      `→ ${top.party} — ${top.pct}% alignment`,
-      quad ? `→ Leaning: ${quad}` : null,
-      matches[1] ? `→ Runner-up: ${matches[1].party} (${matches[1].pct}%)` : null,
-      `Find yours at Voteview.`,
-    ].filter(Boolean).join("\n");
-    navigator.clipboard?.writeText(lines).then(() => {
-      setCopied(true); setTimeout(() => setCopied(false), 2200);
-    }).catch(() => {});
-  }
-
-  return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: 0, marginBottom: "2rem", overflow: "hidden", boxShadow: "var(--shadow-md)", animation: "slideIn 0.45s ease-out" }}>
-      <div style={{ height: 4, background: `linear-gradient(90deg, ${p.color}, var(--accent))` }} />
-      <div style={{ padding: "1.6rem 1.8rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 18 }}>
-          <p className="mono-label" style={{ margin: 0 }}>Your result · {QUIZ_QUESTIONS.length} answers</p>
-          <button onClick={onDismiss} aria-label="Dismiss result" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex", borderRadius: 8 }}>{Icon.close(16)}</button>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
-          <Avatar party={top.party} size={52} />
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <p style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 28, color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>{top.party}</p>
-            <p style={{ fontSize: 13.5, color: "var(--text-secondary)", margin: "3px 0 0" }}>
-              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: p.color }}>{top.pct}%</span> alignment
-              {quad && <> · you lean <strong style={{ color: "var(--text-primary)" }}>{quad}</strong></>}
-            </p>
-          </div>
-          <button onClick={share}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid var(--border-strong)", background: copied ? "var(--accent-soft)" : "var(--bg-muted)", color: copied ? "var(--accent-ink)" : "var(--text-secondary)", fontSize: 12.5, fontWeight: 600 }}>
-            {copied ? Icon.check(13) : Icon.link(13)} {copied ? "Copied" : "Copy result"}
-          </button>
-        </div>
-
-        {breakdown.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
-            {breakdown.map(b => (
-              <span key={b.label} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 600, padding: "5px 11px", borderRadius: 99, border: `1px solid ${b.agree ? p.color : "var(--border)"}`, background: b.agree ? p.color + "14" : "transparent", color: b.agree ? "var(--text-primary)" : "var(--text-muted)" }}>
-                <span style={{ display: "flex", color: b.agree ? p.color : "var(--text-faint)" }}>{b.agree ? Icon.check(11) : Icon.close(11)}</span>
-                {b.label}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", borderTop: "1px solid var(--border-light)", paddingTop: 14 }}>
-          <span className="mono-label" style={{ alignSelf: "center" }}>Also close</span>
-          {matches.slice(1).map(m => {
-            const mp = PARTIES[m.party] || { color: "#888" };
-            return <div key={m.party} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--text-secondary)", background: "var(--bg-muted)", padding: "5px 12px", borderRadius: 99, border: "1px solid var(--border)" }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: mp.color }} />{m.party} · <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{m.pct}%</span></div>;
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SpectrumBar({ parties }) {
-  return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        {["Left", "Centre", "Right"].map(l => <span key={l} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>{l}</span>)}
-      </div>
-      <div style={{ position: "relative", height: 4, borderRadius: 99, background: "linear-gradient(to right, #cc3333, var(--border), #3366cc)", marginBottom: 32 }}>
-        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 1, height: 14, background: "var(--text-faint)" }} />
-        {parties.map(party => {
-          const p = PARTIES[party];
-          if (!p) return null;
-          return (
-            <div key={party} style={{ position: "absolute", left: `${p.spectrum}%`, top: "50%", transform: "translate(-50%,-50%)" }}>
-              <div style={{ width: 16, height: 16, borderRadius: "50%", background: p.color, border: "3px solid var(--bg-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
-              <div style={{ position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{p.short}</div>
-            </div>
-          );
-        })}
-      </div>
-      <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0 }}>Marker colours are official party colours, not spectrum indicators. Positions are approximate.</p>
-    </div>
-  );
-}
-
-function PartyLeaderCards({ parties }) {
-  return (
-    <div style={{ marginBottom: "2rem" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 14 }}>
-        {parties.map(party => {
-          const p = PARTIES[party];
-          if (!p) return null;
-          return (
-            <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-              <div style={{ height: 3, background: p.color }} />
-              <div style={{ padding: "16px 18px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
-                  <Avatar party={party} size={38} />
-                  <div>
-                    <p style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text-primary)", margin: 0 }}>{p.leader}</p>
-                    <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{party}</p>
-                  </div>
-                </div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: p.color, margin: "0 0 6px" }}>{p.leaderTitle}</p>
-                <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 10px" }}>{p.leaderBio}</p>
-                <p style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.55, margin: 0, borderTop: "1px solid var(--border)", paddingTop: 10, fontStyle: "italic" }}>{p.partyBio}</p>
-                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 10, width: "100%" }}>{Icon.link()} Official website</a>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function GeopoliticsCard({ country }) {
-  const c = COUNTRIES[country];
-  if (!c?.geopolitics) return null;
-  return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.75rem", marginBottom: "2rem", borderLeft: "4px solid var(--accent)" }}>
-      <p style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", margin: "0 0 10px" }}>{Icon.globe(13)} Why this election matters</p>
-      <p style={{ fontSize: 14.5, color: "var(--text-primary)", lineHeight: 1.75, margin: 0 }}>{c.geopolitics}</p>
-      {c.electionDate && <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "12px 0 0" }}>Election date: {c.electionDate}</p>}
-    </div>
-  );
-}
-
-function NewsFeed({ country }) {
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const c = COUNTRIES[country];
-
-  useEffect(() => {
-    if (!country || !c?.newsQuery) return;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/news?q=${encodeURIComponent(c.newsQuery)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === "ok") setArticles(data.articles.filter(a => a.title && a.url && a.title !== "[Removed]"));
-        else setError("Couldn't load news.");
-        setLoading(false);
-      })
-      .catch(() => { setError("Couldn't load news."); setLoading(false); });
-  }, [country]);
-
-  return (
-    <div style={{ marginTop: "3rem", borderTop: "1px solid var(--border)", paddingTop: "2.25rem" }}>
-      <h3 style={{ display: "flex", alignItems: "center", gap: 11, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: "0 0 1.25rem", lineHeight: 1.1 }}>
-        {Icon.news(18)} Latest news — {c?.flag} {country}
-      </h3>
-      {loading && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-          {[1,2,3].map(i => (
-            <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-              <div className="skeleton" style={{ height: 140 }} />
-              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-                <div className="skeleton" style={{ height: 11, width: "40%", borderRadius: 6 }} />
-                <div className="skeleton" style={{ height: 14, width: "92%", borderRadius: 6 }} />
-                <div className="skeleton" style={{ height: 14, width: "70%", borderRadius: 6 }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {error && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{error}</p>}
-      {!loading && !error && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-          {articles.map((a, i) => (
-            <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", display: "block", transition: "border-color 0.18s, transform 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-              {a.urlToImage && <img src={a.urlToImage} alt="" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
-              <div style={{ padding: "14px 16px" }}>
-                <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: "0 0 7px", fontWeight: 600 }}>{a.source?.name}</p>
-                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 7px", lineHeight: 1.45, letterSpacing: "-0.01em" }}>{a.title}</p>
-                <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{new Date(a.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
-      {!loading && !error && articles.length === 0 && <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No recent news found for this election.</p>}
-    </div>
-  );
-}
-
-function StatCounter({ end, label, duration = 2000, compact = false }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const fmt = v => compact
-    ? new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v)
-    : v.toLocaleString();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        let start = 0;
-        const step = end / (duration / 16);
-        const timer = setInterval(() => {
-          start += step;
-          if (start >= end) { setCount(end); clearInterval(timer); }
-          else setCount(Math.floor(start));
-        }, 16);
-        observer.disconnect();
-      }
-    });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
-
-  return (
-    <div ref={ref} style={{ textAlign: "center" }}>
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: "clamp(22px, 6vw, 30px)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text-primary)", lineHeight: 1, whiteSpace: "nowrap" }}>{fmt(count)}</div>
-      <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 8, fontWeight: 500, letterSpacing: "0.01em", lineHeight: 1.3 }}>{label}</div>
-    </div>
-  );
-}
-
-function WorldMap({ onSelectCountry, selectedCountry }) {
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, country: null });
-  const activeCountries = Object.keys(COUNTRIES);
-  const countryNameMap = { "United States of America": "United States" };
-
-  return (
-    <div style={{ position: "relative", background: "var(--bg-card)", borderRadius: 24, border: "1px solid var(--border)", overflow: "hidden" }}>
-      <div style={{ padding: "1.75rem 1.75rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
-        <div>
-          <p className="mono-label" style={{ margin: "0 0 6px" }}>Interactive map</p>
-          <p style={{ fontSize: 14.5, color: "var(--text-secondary)", margin: 0 }}>Click a highlighted country below to load its election</p>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {activeCountries.map(name => {
-            const c = COUNTRIES[name];
-            const sel = selectedCountry === name;
+          {q.opts.map(([label, val]) => {
+            const sel = chosen === val;
             return (
-              <button key={name} onClick={() => onSelectCountry(name)}
-                style={{ background: sel ? "var(--accent-soft)" : "var(--bg-muted)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 99, padding: "6px 13px", cursor: "pointer", fontSize: 12.5, color: sel ? "var(--accent)" : "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6, transition: "all 0.18s ease", fontWeight: sel ? 600 : 500 }}>
-                <span aria-hidden="true">{c.flag}</span> {name}
+              <button key={val} onClick={() => choose(val)} style={{ padding: "14px 16px", borderRadius: 14, cursor: "pointer", border: `1.5px solid ${sel ? "var(--accent)" : "var(--border)"}`, background: sel ? "var(--accent-soft)" : "var(--bg)", color: "var(--text-primary)", fontSize: 14, textAlign: "left", fontWeight: 500, display: "flex", gap: 12, alignItems: "center", transition: "all 0.15s" }}>
+                <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "var(--accent)" : "var(--border-strong)"}`, background: sel ? "var(--accent)" : "transparent", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>{sel && Icon.check(10)}</span>
+                {label}
               </button>
             );
           })}
         </div>
+        <div style={{ marginTop: "1.3rem", opacity: chosen ? 1 : 0.4, pointerEvents: chosen ? "auto" : "none", transition: "opacity 0.2s" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}><span style={{ display: "flex", color: "var(--text-muted)" }}>{Icon.scale(13)}</span><span className="mono-label" style={{ margin: 0 }}>How much does this issue matter?</span></div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {WEIGHTS.map(wo => { const active = weight === wo.v && chosen; return <button key={wo.v} onClick={() => setWeights(w => ({ ...w, [q.id]: wo.v }))} style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: `1.5px solid ${active ? "var(--accent)" : "var(--border)"}`, background: active ? "var(--accent)" : "var(--bg)", color: active ? "#fff" : "var(--text-secondary)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>{wo.label}</button>; })}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: "1.7rem" }}>
+          <button onClick={() => step > 0 ? setStep(s => s - 1) : onClose()} style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>{step > 0 ? "← Back" : "Cancel"}</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={skip} style={{ background: "none", border: "none", color: "var(--text-faint)", fontSize: 13, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>Skip</button>
+            <button onClick={next} disabled={!chosen} style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 22px", borderRadius: 12, border: "none", background: chosen ? "var(--accent)" : "var(--bg-muted)", color: chosen ? "#fff" : "var(--text-faint)", fontSize: 14, fontWeight: 700, cursor: chosen ? "pointer" : "not-allowed" }}>{isLast ? "See my result" : "Next"} {Icon.arrow(15)}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function scoreQuiz(answers, weights) {
+  const ids = Object.keys(answers).filter(id => (weights[id] ?? 2) > 0);
+  if (!ids.length) return null;
+  let weighted = 0, tw = 0;
+  for (const id of ids) { const w = weights[id] ?? 2; weighted += LEAN_VAL[answers[id]] * w; tw += w; }
+  return tw ? weighted / tw : 0;
+}
+
+/* ---------- Share card (canvas → PNG) ---------- */
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+function ShareCardModal({ score, lean, onClose }) {
+  const ref = useRef(null);
+  const [status, setStatus] = useState("");
+  const [canShare, setCanShare] = useState(false);
+  const W = 1200, H = 675;
+  const cp = closerParty(score);
+  const accent = cp ? PARTY[cp].color : "#8b83ff";
+
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && !!navigator.canShare);
+    let stop = false;
+    (async () => {
+      const c = ref.current; if (!c) return;
+      try { await Promise.all([document.fonts.load('400 64px "Instrument Serif"'), document.fonts.load('700 80px "JetBrains Mono"'), document.fonts.ready]); } catch {}
+      if (stop) return;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#0a0c11"; ctx.fillRect(0, 0, W, H);
+      const g = ctx.createRadialGradient(W - 160, 120, 40, W - 160, 120, 520); g.addColorStop(0, accent + "33"); g.addColorStop(1, accent + "00"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,0.045)"; for (let x = 40; x < W; x += 30) for (let y = 40; y < H; y += 30) { ctx.beginPath(); ctx.arc(x, y, 1.1, 0, 7); ctx.fill(); }
+      ctx.fillStyle = accent; ctx.fillRect(0, 0, W, 8);
+      const PAD = 74;
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f0f1f4"; ctx.font = '400 40px "Instrument Serif", Georgia, serif'; ctx.fillText("Voteview", PAD, 96);
+      ctx.fillStyle = "#6c7280"; ctx.font = '500 16px "JetBrains Mono", monospace'; ctx.fillText("2026 SENATE BATTLEGROUNDS", PAD + 188, 92);
+      ctx.fillStyle = accent; ctx.font = '500 20px "JetBrains Mono", monospace'; ctx.fillText("MY LEAN", PAD, 230);
+      ctx.fillStyle = "#ffffff"; ctx.font = '400 76px "Instrument Serif", Georgia, serif';
+      // wrap lean into up to 2 lines
+      const words = (lean || "").split(" "); const lines = []; let cur = "";
+      ctx.font = '400 72px "Instrument Serif", Georgia, serif';
+      for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > 720 && cur) { lines.push(cur); cur = w; } else cur = t; }
+      if (cur) lines.push(cur);
+      lines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, PAD, 312 + i * 78));
+      // scale meter
+      const my = 312 + Math.min(lines.length, 2) * 78 + 40, mx = PAD, mw = W - PAD * 2, mh = 16;
+      ctx.fillStyle = "#1a1e28"; roundRect(ctx, mx, my, mw, mh, 8); ctx.fill();
+      const dotX = mx + ((score + 1) / 2) * mw;
+      ctx.fillStyle = PARTY.D.color; ctx.font = '600 18px "JetBrains Mono", monospace'; ctx.fillText("DEM", mx, my - 14);
+      ctx.fillStyle = PARTY.R.color; ctx.textAlign = "right"; ctx.fillText("REP", mx + mw, my - 14); ctx.textAlign = "left";
+      ctx.fillStyle = accent; ctx.beginPath(); ctx.arc(dotX, my + mh / 2, 18, 0, 7); ctx.fill(); ctx.strokeStyle = "#0a0c11"; ctx.lineWidth = 5; ctx.stroke();
+      ctx.strokeStyle = "#1d2129"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD, H - 80); ctx.lineTo(W - PAD, H - 80); ctx.stroke();
+      ctx.fillStyle = "#6c7280"; ctx.font = '500 19px "JetBrains Mono", monospace'; ctx.fillText("Find your lean in 10 toss-up Senate races", PAD, H - 44);
+      ctx.fillStyle = "#a5aab4"; ctx.textAlign = "right"; ctx.fillText("Voteview", W - PAD, H - 44); ctx.textAlign = "left";
+    })();
+    return () => { stop = true; };
+  }, [score, lean, accent]);
+
+  const withBlob = cb => ref.current?.toBlob(b => b && cb(b), "image/png");
+  const download = () => withBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "voteview-senate-lean.png"; a.click(); URL.revokeObjectURL(u); setStatus("Downloaded"); setTimeout(() => setStatus(""), 1800); });
+  const shareImg = () => withBlob(async b => { const f = new File([b], "voteview.png", { type: "image/png" }); try { if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: "My 2026 Senate lean", text: lean }); else download(); } catch {} });
+  const copyImg = () => withBlob(async b => { try { await navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); setStatus("Copied"); setTimeout(() => setStatus(""), 1800); } catch { setStatus("Use Download"); setTimeout(() => setStatus(""), 2200); } });
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem", animation: "fadeIn 0.2s ease-out" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", borderRadius: 22, padding: "1.5rem", maxWidth: 640, width: "100%", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}><p className="mono-label" style={{ margin: 0 }}>Share your lean</p><button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex" }}>{Icon.close(18)}</button></div>
+        <canvas ref={ref} width={W} height={H} style={{ width: "100%", height: "auto", borderRadius: 14, border: "1px solid var(--border)", display: "block", background: "#0a0c11" }} />
+        <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+          {canShare && <button onClick={shareImg} style={{ flex: "1 1 130px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 18px", borderRadius: 12, border: "none", background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 700 }}>{Icon.share(15)} Share</button>}
+          <button onClick={download} style={{ flex: "1 1 130px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 18px", borderRadius: 12, border: canShare ? "1px solid var(--border-strong)" : "none", background: canShare ? "var(--bg-muted)" : "var(--accent)", color: canShare ? "var(--text-primary)" : "#fff", fontSize: 14, fontWeight: 700 }}>{Icon.download(15)} Download</button>
+          <button onClick={copyImg} style={{ flex: "1 1 110px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 18px", borderRadius: 12, border: "1px solid var(--border-strong)", background: "var(--bg-muted)", color: "var(--text-primary)", fontSize: 14, fontWeight: 600 }}>{Icon.image(15)} Copy</button>
+        </div>
+        <p style={{ minHeight: 18, margin: "10px 0 0", textAlign: "center", fontSize: 12.5, fontWeight: 600, color: "var(--accent-ink)" }}>{status}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Battleground map ---------- */
+const RACE_BY_STATE = Object.fromEntries(RACES.map(r => [r.state, r]));
+
+function USMap({ cp, onOpen }) {
+  const [hover, setHover] = useState(null);
+  const fillFor = (race, hovered) => {
+    const base = race.rating === "Lean R" ? PARTY.R.color : race.rating === "Lean D" ? PARTY.D.color : "var(--accent)";
+    return { fill: base, fillOpacity: hovered ? 0.92 : 0.6 };
+  };
+  const hoveredRace = hover ? RACE_BY_STATE[hover] : null;
+
+  return (
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.2rem 1.3rem 1rem", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+        <p className="mono-label" style={{ margin: 0 }}>The map · click a battleground</p>
+        <div style={{ display: "flex", gap: 13, flexWrap: "wrap" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "var(--text-muted)" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: "var(--accent)", opacity: 0.7 }} /> Toss-up</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "var(--text-muted)" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: PARTY.D.color, opacity: 0.7 }} /> Lean D</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "var(--text-muted)" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: PARTY.R.color, opacity: 0.7 }} /> Lean R</span>
+        </div>
       </div>
 
-      <ComposableMap projectionConfig={{ scale: 165, center: [10, 10] }} style={{ width: "100%", height: 540 }}>
+      <ComposableMap projection="geoAlbersUsa" style={{ width: "100%", height: "auto" }} projectionConfig={{ scale: 1000 }}>
         <Geographies geography={GEO_URL}>
           {({ geographies }) => geographies.map(geo => {
-            const rawName = geo.properties.name;
-            const mappedName = countryNameMap[rawName] || rawName;
-            const isActive = activeCountries.includes(mappedName);
-            const isSelected = selectedCountry === mappedName;
+            const name = geo.properties.name;
+            const race = RACE_BY_STATE[name];
+            const isHover = hover === name;
+            if (!race) {
+              return <Geography key={geo.rsmKey} geography={geo} style={{
+                default: { fill: "var(--bg-muted)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none" },
+                hover: { fill: "var(--bg-muted)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none" },
+                pressed: { outline: "none" },
+              }} />;
+            }
+            const f = fillFor(race, isHover);
             return (
-              <Geography key={geo.rsmKey} geography={geo}
-                onClick={() => isActive && onSelectCountry(mappedName)}
-                onMouseEnter={e => { if (isActive) setTooltip({ visible: true, x: e.clientX, y: e.clientY, country: mappedName }); }}
-                onMouseMove={e => { if (isActive) setTooltip(t => ({ ...t, x: e.clientX, y: e.clientY })); }}
-                onMouseLeave={() => setTooltip({ visible: false, x: 0, y: 0, country: null })}
-                style={{
-                  default: { fill: isSelected ? "var(--accent)" : isActive ? "var(--text-faint)" : "var(--border-light)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none", cursor: isActive ? "pointer" : "default", transition: "fill 0.2s" },
-                  hover: { fill: isActive ? (isSelected ? "var(--accent)" : "var(--text-muted)") : "var(--border-light)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none" },
-                  pressed: { fill: isActive ? "var(--accent)" : "var(--border-light)", outline: "none" }
-                }}
-              />
+              <g key={geo.rsmKey}>
+                <Geography geography={geo}
+                  onMouseEnter={() => setHover(name)} onMouseLeave={() => setHover(null)}
+                  onClick={() => onOpen(race)}
+                  style={{
+                    default: { fill: f.fill, fillOpacity: f.fillOpacity, stroke: "var(--bg-card)", strokeWidth: 1, outline: "none", cursor: "pointer", transition: "fill-opacity 0.15s" },
+                    hover: { fill: f.fill, fillOpacity: 0.92, stroke: "var(--bg-card)", strokeWidth: 1.4, outline: "none", cursor: "pointer" },
+                    pressed: { outline: "none" },
+                  }} />
+                <Marker coordinates={geoCentroid(geo)}>
+                  <text textAnchor="middle" style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, fill: "#fff", pointerEvents: "none" }} dy={3}>{race.id}</text>
+                </Marker>
+              </g>
             );
           })}
         </Geographies>
-
-        {activeCountries.map(name => {
-          const c = COUNTRIES[name];
-          if (!c.coordinates) return null;
-          const isSelected = selectedCountry === name;
-          return (
-            <Marker key={name} coordinates={c.coordinates} onClick={() => onSelectCountry(name)}>
-              <circle r={isSelected ? 8 : 5} fill={isSelected ? "var(--accent)" : "var(--text-secondary)"} stroke={isSelected ? "var(--accent-soft)" : "transparent"} strokeWidth={isSelected ? 6 : 0} style={{ cursor: "pointer" }} />
-              {isSelected && <circle r={14} fill="none" stroke="var(--accent)" strokeOpacity={0.35} strokeWidth={1.5} />}
-            </Marker>
-          );
-        })}
       </ComposableMap>
 
-      {tooltip.visible && tooltip.country && (
-        <div style={{ position: "fixed", left: tooltip.x + 14, top: tooltip.y - 42, background: "var(--text-primary)", color: "var(--bg)", padding: "7px 13px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, pointerEvents: "none", zIndex: 999, whiteSpace: "nowrap" }}>
-          {COUNTRIES[tooltip.country]?.flag} {tooltip.country} · {COUNTRIES[tooltip.country]?.electionDate}
-        </div>
-      )}
+      <div style={{ minHeight: 44, marginTop: 6, paddingTop: 10, borderTop: "1px solid var(--border-light)", display: "flex", alignItems: "center", gap: 10 }}>
+        {hoveredRace ? (
+          <>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text-primary)" }}>{hoveredRace.state}</span>
+            <RatingPill rating={hoveredRace.rating} />
+            <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+              {hoveredRace.candidates.map((c, i) => (
+                <span key={c.name}>{i > 0 && <span style={{ color: "var(--text-faint)" }}> vs </span>}<span style={{ color: cp && c.party === cp ? PARTY[c.party].color : "var(--text-secondary)", fontWeight: cp && c.party === cp ? 700 : 500 }}>{c.name} ({c.party})</span></span>
+              ))}
+            </span>
+          </>
+        ) : (
+          <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>Hover a highlighted state to preview the race — click to compare the candidates.</span>
+        )}
+      </div>
     </div>
   );
 }
 
-function ComparisonView({ data, country, year, matchResults, quizAnswers }) {
-  const allParties = Object.keys(data);
-  const [selectedParties, setSelectedParties] = useState(null);
-  const [selectedIssue, setSelectedIssue] = useState(null);
-  const [expandedCells, setExpandedCells] = useState({});
-  const [showMatch, setShowMatch] = useState(true);
-  const [activeTab, setActiveTab] = useState("positions");
+/* ---------- Race card ---------- */
+function RaceCard({ race, cp, onOpen }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button onClick={() => onOpen(race)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ textAlign: "left", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.1rem 1.2rem", cursor: "pointer", boxShadow: hover ? "var(--shadow-md)" : "var(--shadow-sm)", transform: hover ? "translateY(-3px)" : "none", transition: "all 0.2s cubic-bezier(0.34,1.56,0.64,1)", width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: "var(--text-muted)" }}>{race.id}</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 19, color: "var(--text-primary)", lineHeight: 1 }}>{race.state}</span>
+        </div>
+        <RatingPill rating={race.rating} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {race.candidates.map(c => {
+          const isCloser = cp && c.party === cp;
+          return (
+            <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 8px", borderRadius: 9, background: isCloser ? PARTY[c.party].soft : "transparent", border: isCloser ? `1px solid ${PARTY[c.party].color}55` : "1px solid transparent" }}>
+              <PartyAvatar party={c.party} size={26} />
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)", flex: 1 }}>{c.name}</span>
+              {isCloser && <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, color: PARTY[c.party].color, letterSpacing: "0.04em" }}>CLOSER TO YOU</span>}
+              {c.status === "Incumbent" || c.status === "Appointed incumbent" ? <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-faint)" }}>INC</span> : null}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--border-light)", paddingTop: 9 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-faint)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{race.type}{race.open ? " · Open seat" : ""} · held by {race.heldBy}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: hover ? "var(--accent)" : "var(--text-muted)" }}>Compare {Icon.arrow(12)}</span>
+      </div>
+    </button>
+  );
+}
 
-  const parties = selectedParties || allParties;
+/* ---------- Race detail ---------- */
+function RaceDetail({ race, cp, onClose }) {
+  const dem = race.candidates.find(c => c.party === "D");
+  const rep = race.candidates.find(c => c.party === "R");
+  const ind = race.candidates.find(c => c.party === "I");
+  const left = dem || ind || race.candidates[0];
+  const right = rep || race.candidates[1];
 
-  function toggleParty(party) {
-    if (!selectedParties) setSelectedParties(allParties.filter(p => p !== party));
-    else if (selectedParties.includes(party)) {
-      const next = selectedParties.filter(p => p !== party);
-      setSelectedParties(next.length === 0 ? null : next);
-    } else {
-      const next = [...selectedParties, party];
-      setSelectedParties(next.length === allParties.length ? null : next);
-    }
-  }
-
-  function toggleCell(party, issue) {
-    const k = `${party}__${issue}`;
-    setExpandedCells(prev => ({ ...prev, [k]: !prev[k] }));
-  }
-
-  const issuesToShow = selectedIssue ? [ISSUES.find(i => i.key === selectedIssue)] : ISSUES;
+  const CandCard = ({ c, closer }) => c ? (
+    <div style={{ flex: 1, minWidth: 0, background: closer ? PARTY[c.party].soft : "var(--bg)", border: `1px solid ${closer ? PARTY[c.party].color + "66" : "var(--border)"}`, borderRadius: 14, padding: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 8 }}>
+        <PartyAvatar party={c.party} size={42} />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.15 }}>{c.name}</p>
+          <p style={{ fontSize: 11.5, color: PARTY[c.party].color, fontWeight: 600, margin: "2px 0 0" }}>{PARTY[c.party].name} · {c.role}</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        {c.status === "Primary pending" && <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 600, color: "var(--text-muted)", background: "var(--bg-muted)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: 99, textTransform: "uppercase" }}>Primary pending</span>}
+        {c.status === "Presumptive" && <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 600, color: "var(--text-muted)", background: "var(--bg-muted)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: 99, textTransform: "uppercase" }}>Presumptive</span>}
+        {closer && <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, color: PARTY[c.party].color, letterSpacing: "0.04em" }}>CLOSER TO YOU</span>}
+        <a href={bp(c.name)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none", marginLeft: "auto" }}>{Icon.link(11)} Research</a>
+      </div>
+    </div>
+  ) : <div style={{ flex: 1 }} />;
 
   return (
-    <div style={{ maxWidth: 1300, margin: "0 auto", padding: "3rem 2rem 4rem" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: 14 }}>
-        <div>
-          <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{COUNTRIES[country]?.flag} {country} · {year} election</p>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 34, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>Party positions</h2>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 260, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1.25rem", overflowY: "auto", animation: "fadeIn 0.2s ease-out" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", borderRadius: 22, maxWidth: 760, width: "100%", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", margin: "auto", overflow: "hidden" }}>
+        <div style={{ padding: "1.5rem 1.7rem 1.2rem", borderBottom: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 30, color: "var(--text-primary)", margin: 0, lineHeight: 1 }}>{race.state}</h2>
+                <RatingPill rating={race.rating} />
+              </div>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-muted)", margin: 0, letterSpacing: "0.04em", textTransform: "uppercase" }}>{race.type} election{race.open ? " · open seat" : ""} · currently held by {PARTY[race.heldBy].name}s</p>
+            </div>
+            <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex" }}>{Icon.close(20)}</button>
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{parties.length} parties · {ISSUES.length} issues</div>
-      </div>
 
-      {matchResults && showMatch && <MatchBanner matches={matchResults} answers={quizAnswers} country={country} onDismiss={() => setShowMatch(false)} />}
-      <GeopoliticsCard country={country} />
-      <PoliticalCompass parties={parties} userPos={quizAnswers ? computeCompass(quizAnswers) : null} country={country} />
-      <SpectrumBar parties={parties} />
-
-      <div style={{ display: "flex", gap: 6, marginBottom: "2rem", borderBottom: "1px solid var(--border)" }}>
-        {[{ id: "positions", label: "Positions", icon: "chart" }, { id: "leaders", label: "Leaders & parties", icon: "users" }].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: activeTab === tab.id ? "var(--text-primary)" : "var(--text-muted)", borderBottom: `2px solid ${activeTab === tab.id ? "var(--accent)" : "transparent"}`, marginBottom: -1, transition: "all 0.18s ease" }}>{Icon[tab.icon](15)}{tab.label}</button>
-        ))}
-      </div>
-
-      {activeTab === "leaders" && <PartyLeaderCards parties={allParties} />}
-
-      {activeTab === "positions" && (
-        <>
-          <div style={{ marginBottom: "1.5rem" }}>
-            <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>Parties</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {allParties.map(party => <PartyPill key={party} party={party} active={!selectedParties || selectedParties.includes(party)} onClick={() => toggleParty(party)} />)}
-            </div>
-          </div>
-          <div style={{ marginBottom: "2.5rem" }}>
-            <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>Issue</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <IssuePill issue={{ key: "All issues", icon: "vote" }} active={!selectedIssue} onClick={() => setSelectedIssue(null)} />
-              {ISSUES.map(issue => <IssuePill key={issue.key} issue={issue} active={selectedIssue === issue.key} onClick={() => setSelectedIssue(issue.key === selectedIssue ? null : issue.key)} />)}
-            </div>
+        <div style={{ padding: "1.4rem 1.7rem" }}>
+          {/* candidates */}
+          <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+            <CandCard c={left} closer={cp && left && left.party === cp} />
+            <CandCard c={right} closer={cp && right && right.party === cp} />
           </div>
 
-          {selectedIssue && (() => {
-            const issue = ISSUES.find(i => i.key === selectedIssue);
-            return (
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.75rem" }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>{Icon[issue.icon](20)}</div>
-                  <div>
-                    <h3 style={{ fontFamily: "var(--font-display)", fontSize: 27, fontWeight: 400, letterSpacing: "0", color: "var(--text-primary)", margin: 0, lineHeight: 1.1 }}>{issue.key}</h3>
-                    <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Where each party stands</p>
+          {/* stakes */}
+          <div style={{ display: "flex", gap: 11, padding: "13px 15px", borderRadius: 12, background: "var(--accent-soft)", border: "1px solid var(--accent)", marginBottom: 20 }}>
+            <span style={{ flexShrink: 0, color: "var(--accent)", marginTop: 1 }}>{Icon.flag(15)}</span>
+            <p style={{ fontSize: 13.5, color: "var(--text-primary)", margin: 0, lineHeight: 1.6 }}><strong>What&apos;s at stake:</strong> {race.stakes}</p>
+          </div>
+
+          {/* candidate comparison */}
+          <p className="mono-label" style={{ margin: "0 0 4px" }}>Where they stand</p>
+          <div style={{ display: "flex", gap: 11, padding: "10px 13px", borderRadius: 10, background: "var(--bg-muted)", border: "1px solid var(--border)", marginBottom: 14 }}>
+            <span style={{ flexShrink: 0, color: "var(--text-muted)", marginTop: 1 }}>{Icon.warn(13)}</span>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.55 }}><strong>Sourced</strong> rows paraphrase the candidate&apos;s own stated record (tap to read the source). <strong>Unverified</strong> rows show the general party-platform direction while we source that candidate&apos;s record — tap to add a citation.</p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {ISSUES.map((iss, i) => {
+              const cell = (c) => {
+                if (!c) return <div style={{ flex: 1 }} />;
+                const sourced = POSITIONS[c.name]?.[iss.id];
+                const baseline = c.party === "R" ? iss.R : c.party === "I" ? "Independent — position on this issue not yet sourced." : iss.D;
+                return (
+                  <div style={{ flex: 1, minWidth: 0, borderLeft: `3px solid ${PARTY[c.party].color}`, paddingLeft: 11 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4, flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, fontWeight: 600, color: PARTY[c.party].color, letterSpacing: "0.04em", textTransform: "uppercase" }}>{c.name}</span>
+                      {sourced
+                        ? <a href={sourced.url} target="_blank" rel="noopener noreferrer" title={`Source: ${sourced.by}`} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--font-mono)", fontSize: 8.5, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--grad-3)", background: "color-mix(in srgb, var(--grad-3) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--grad-3) 45%, transparent)", padding: "1px 6px", borderRadius: 99, textDecoration: "none" }}>{Icon.shield(8)} {sourced.by}</a>
+                        : <UnverifiedBadge race={race.state} party={c.party} issue={iss.label} />}
+                    </div>
+                    <p style={{ fontSize: 12.5, color: sourced ? "var(--text-primary)" : "var(--text-muted)", margin: 0, lineHeight: 1.55, fontStyle: sourced ? "normal" : "italic" }}>{sourced ? sourced.text : baseline}</p>
+                  </div>
+                );
+              };
+              return (
+                <div key={iss.id} style={{ padding: "14px 0", borderTop: i === 0 ? "none" : "1px solid var(--border-light)" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)", display: "block", marginBottom: 9 }}>{iss.label}</span>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                    {cell(left)}
+                    {cell(right)}
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(265px, 1fr))", gap: 16 }}>
-                  {parties.map(party => {
-                    const p = PARTIES[party] || { color: "#888" };
-                    const pos = data[party]?.[selectedIssue];
-                    const noData = !pos || pos.position_summary === "No position found in platform text";
-                    const expanded = !!expandedCells[`${party}__${selectedIssue}`];
-                    return (
-                      <div key={party} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
-                        <div style={{ height: 4, background: p.color }} />
-                        <div style={{ padding: "18px 20px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 15 }}>
-                            <Avatar party={party} size={40} />
-                            <div>
-                              <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--text-primary)", display: "block" }}>{party}</span>
-                              <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{p.leader}</span>
-                            </div>
-                          </div>
-                          {noData ? <p style={{ fontSize: 13, color: "var(--text-faint)", fontStyle: "italic" }}>No official position found in platform</p> : (
-                            <>
-                              {pos.key_policies?.length > 0 && (
-                                <ul style={{ margin: "0 0 11px", paddingLeft: 0, listStyle: "none" }}>
-                                  {pos.key_policies.map((pol, i) => (
-                                    <li key={i} style={{ fontSize: 13.5, color: "var(--text-primary)", lineHeight: 1.6, padding: "6px 0", display: "flex", gap: 9, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
-                                      <span style={{ color: p.color, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>›</span>{pol}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                              <button onClick={() => toggleCell(party, selectedIssue)} style={{ fontSize: 12.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
-                                {expanded ? "Hide summary" : "Show summary"}
-                              </button>
-                              {expanded && (
-                                <div style={{ margin: "11px 0 0" }}>
-                                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "var(--text-secondary)", borderLeft: `3px solid ${p.color}`, paddingLeft: 13 }}>{pos.position_summary}</p>
-                                  {pos.supporting_quote && (
-                                    <blockquote style={{ margin: "12px 0 0", padding: "10px 14px", background: "var(--bg-muted)", borderRadius: 10, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 15, lineHeight: 1.5, color: "var(--text-primary)", position: "relative" }}>
-                                      <span style={{ color: p.color, fontWeight: 700, marginRight: 4 }}>&ldquo;</span>{pos.supporting_quote}<span style={{ color: p.color, fontWeight: 700, marginLeft: 2 }}>&rdquo;</span>
-                                      <span style={{ display: "block", fontFamily: "var(--font-mono)", fontStyle: "normal", fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 6 }}>From the party platform</span>
-                                    </blockquote>
-                                  )}
-                                </div>
-                              )}
-                              {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, color: "var(--text-faint)", textDecoration: "none", borderTop: "1px solid var(--border-light)", paddingTop: 11, width: "100%" }}>{Icon.link()} Official party website</a>}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-
-          {!selectedIssue && (
-            <div style={{ overflowX: "auto", borderRadius: 16, border: "1px solid var(--border)" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", background: "var(--bg-card)", minWidth: 700 }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    <th style={{ padding: "16px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)", background: "var(--thead-bg)", width: 165, position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid var(--border)" }}>Issue</th>
-                    {parties.map(party => {
-                      const p = PARTIES[party] || { color: "#888" };
-                      return (
-                        <th key={party} style={{ padding: "16px 18px", textAlign: "center", background: "var(--thead-bg)", minWidth: 175, borderRight: "1px solid var(--border-light)" }}>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                            <Avatar party={party} size={32} />
-                            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "-0.01em", lineHeight: 1.35 }}>{party}</span>
-                            <span style={{ fontSize: 10.5, color: "var(--text-muted)" }}>{p.leader}</span>
-                            <div style={{ width: 26, height: 2.5, background: p.color, borderRadius: 99 }} />
-                          </div>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {issuesToShow.map(({ key, icon }, rowIdx) => (
-                    <tr key={key} style={{ borderBottom: rowIdx < issuesToShow.length - 1 ? "1px solid var(--border-light)" : "none", background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)" }}>
-                      <td style={{ padding: "18px 20px", verticalAlign: "top", position: "sticky", left: 0, zIndex: 1, background: rowIdx % 2 === 0 ? "var(--bg-card)" : "var(--row-alt)", borderRight: "1px solid var(--border)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--text-primary)" }}>
-                          {Icon[icon](16)}
-                          <span style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em" }}>{key}</span>
-                        </div>
-                      </td>
-                      {parties.map(party => {
-                        const p = PARTIES[party] || { color: "#888" };
-                        const pos = data[party]?.[key];
-                        const noData = !pos || pos.position_summary === "No position found in platform text";
-                        const expanded = !!expandedCells[`${party}__${key}`];
-                        return (
-                          <td key={party} style={{ padding: "16px 18px", verticalAlign: "top", borderRight: "1px solid var(--border-light)" }}>
-                            {noData ? <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)" }}>—</span> : (
-                              <div>
-                                {pos.key_policies?.length > 0 && (
-                                  <ul style={{ margin: "0 0 7px", paddingLeft: 0, listStyle: "none" }}>
-                                    {pos.key_policies.map((pol, i) => (
-                                      <li key={i} style={{ fontSize: 12.5, color: "var(--text-primary)", lineHeight: 1.6, padding: "3px 0", display: "flex", gap: 7, alignItems: "flex-start", borderBottom: i < pos.key_policies.length - 1 ? "1px solid var(--border-light)" : "none" }}>
-                                        <span style={{ color: p.color, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>›</span>{pol}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                                <button onClick={() => toggleCell(party, key)} style={{ marginTop: 5, fontSize: 11.5, background: "none", border: "none", cursor: "pointer", color: p.color, padding: 0, fontWeight: 700 }}>
-                                  {expanded ? "Hide summary" : "Show summary"}
-                                </button>
-                                {expanded && (
-                                  <div style={{ margin: "9px 0 0" }}>
-                                    <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.7, color: "var(--text-secondary)", borderLeft: `3px solid ${p.color}`, paddingLeft: 11 }}>{pos.position_summary}</p>
-                                    {pos.supporting_quote && (
-                                      <blockquote style={{ margin: "10px 0 0", padding: "8px 12px", background: "var(--bg-muted)", borderRadius: 9, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.5, color: "var(--text-primary)" }}>
-                                        <span style={{ color: p.color, fontWeight: 700, marginRight: 3 }}>&ldquo;</span>{pos.supporting_quote}<span style={{ color: p.color, fontWeight: 700, marginLeft: 2 }}>&rdquo;</span>
-                                        <span style={{ display: "block", fontFamily: "var(--font-mono)", fontStyle: "normal", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 5 }}>From the party platform</span>
-                                      </blockquote>
-                                    )}
-                                  </div>
-                                )}
-                                {p.website && <a href={p.website} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontSize: 10.5, color: "var(--text-faint)", textDecoration: "none" }}>{Icon.link(10)} Official source</a>}
-                              </div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
-      )}
-
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.75rem", marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--text-muted)" }}>Key</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, color: "var(--text-muted)" }}>
-            <span style={{ fontStyle: "italic", fontSize: 13, fontWeight: 600, color: "var(--text-faint)", background: "var(--bg-muted)", padding: "2px 11px", borderRadius: 7, border: "1px solid var(--border)" }}>—</span>
-            No official position found in party platform
-          </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, color: "var(--text-muted)" }}>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "2px 11px", borderRadius: 7, border: "1px solid var(--border)" }}>› bullet</span>
-            Key policy extracted from platform
-          </span>
+              );
+            })}
+          </div>
         </div>
-        <p style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.65, margin: 0 }}>
-          <span style={{ flexShrink: 0, marginTop: 2 }}>{Icon.warn(13)}</span>
-          Positions are AI-generated summaries for informational purposes only. Always verify with official party sources before making voting decisions.
-        </p>
       </div>
-
-      <NewsFeed country={country} />
     </div>
   );
 }
 
+/* ---------- Result banner ---------- */
+function ResultBanner({ score, lean, onShare, onRetake, onDismiss }) {
+  const cp = closerParty(score);
+  const dotX = ((score + 1) / 2) * 100;
+  return (
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden", boxShadow: "var(--shadow-md)", marginBottom: "2rem", animation: "slideIn 0.45s ease-out" }}>
+      <div style={{ height: 4, background: `linear-gradient(90deg, ${PARTY.D.color}, ${cp ? PARTY[cp].color : "var(--accent)"}, ${PARTY.R.color})` }} />
+      <div style={{ padding: "1.5rem 1.7rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+          <div>
+            <p className="mono-label" style={{ margin: "0 0 5px" }}>Your result</p>
+            <p style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 28, color: "var(--text-primary)", margin: 0, lineHeight: 1.05 }}>{lean}</p>
+          </div>
+          <button onClick={onDismiss} aria-label="Dismiss" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, display: "flex" }}>{Icon.close(16)}</button>
+        </div>
+        <div style={{ position: "relative", height: 14, borderRadius: 8, background: `linear-gradient(90deg, ${PARTY.D.color}, var(--bg-muted), ${PARTY.R.color})`, marginBottom: 8 }}>
+          <div style={{ position: "absolute", top: "50%", left: `${dotX}%`, transform: "translate(-50%,-50%)", width: 22, height: 22, borderRadius: "50%", background: cp ? PARTY[cp].color : "var(--text-primary)", border: "3px solid var(--bg-card)", boxShadow: "var(--shadow-sm)" }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--text-muted)", marginBottom: 16 }}><span>DEMOCRATIC</span><span>REPUBLICAN</span></div>
+        <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 16px" }}>
+          {cp ? <>In the battleground races below, the <strong style={{ color: PARTY[cp].color }}>{PARTY[cp].name}</strong> candidate is generally closer to your answers — we&apos;ve marked them. Open any race to compare the details.</> : <>Your answers land near the centre — no clear party lean. Open any race to weigh the candidates yourself.</>}
+        </p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={onShare} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 11, border: "none", background: "var(--accent)", color: "#fff", fontSize: 13.5, fontWeight: 700 }}>{Icon.share(14)} Share my lean</button>
+          <button onClick={onRetake} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 11, border: "1px solid var(--border-strong)", background: "var(--bg-muted)", color: "var(--text-secondary)", fontSize: 13.5, fontWeight: 600 }}>Retake</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Home ---------- */
 export default function Home() {
-  const [country, setCountry] = useState(null);
-  const [year, setYear] = useState(null);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [dark, setDark] = useState(true);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [revealed, setRevealed] = useState(false);
-  const [matchResults, setMatchResults] = useState(null);
-  const [quizAnswers, setQuizAnswers] = useState(null);
-  const comparatorRef = useRef(null);
-  const mapRef = useRef(null);
+  const [result, setResult] = useState(null); // { score, lean }
+  const [showResult, setShowResult] = useState(true);
+  const [showCard, setShowCard] = useState(false);
+  const [openRace, setOpenRace] = useState(null);
+  const { days } = useCountdown(ELECTION_DAY);
 
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-  }, [dark]);
+  useEffect(() => { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); }, [dark]);
 
-  function handleSelectCountry(name) {
-    const c = COUNTRIES[name];
-    if (!c || c.status !== "available") return;
-    setCountry(name);
-    setYear(c.years[0]);
-    setData(null);
-    setLoading(true);
+  const cp = result ? closerParty(result.score) : null;
 
-    const fileMap = {
-      "Sweden": "/extracted_positions.json",
-      "France": "/extracted_positions_france.json",
-      "Brazil": "/extracted_positions_brazil.json",
-      "United States": "/extracted_positions_usa.json",
-      "Nigeria": "/extracted_positions_nigeria.json",
-      "Israel": "/extracted_positions_israel.json",
-    };
-
-    fetch(fileMap[name] || "/extracted_positions.json")
-      .then(r => r.json())
-      .then(d => {
-        setData(d);
-        setLoading(false);
-        if (quizAnswers) {
-          const countryParties = COUNTRIES[name]?.parties || Object.keys(PARTY_MATCH_RULES);
-          setMatchResults(computeMatch(quizAnswers, countryParties));
-        }
-        setTimeout(() => comparatorRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-      });
-  }
-
-  function handleQuizComplete(answers) {
-    setQuizAnswers(answers);
-    const countryParties = (country && COUNTRIES[country]?.parties?.length) ? COUNTRIES[country].parties : Object.keys(PARTY_MATCH_RULES);
-    setMatchResults(computeMatch(answers, countryParties));
+  function completeQuiz({ answers, weights }) {
+    const score = scoreQuiz(answers, weights);
+    setResult({ score: score ?? 0, lean: leanLabel(score ?? 0) });
+    setShowResult(true);
     setShowQuiz(false);
-    revealMap();
+    setTimeout(() => document.getElementById("result-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
-
-  function revealMap() {
-    setRevealed(true);
-    setTimeout(() => mapRef.current?.scrollIntoView({ behavior: "smooth" }), 150);
-  }
-
-  const totalParties = Object.keys(PARTIES).length;
-  const totalPositions = totalParties * ISSUES.length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", transition: "background 0.2s" }}>
-
-      {showQuiz && <QuizModal onComplete={handleQuizComplete} onClose={() => { setShowQuiz(false); revealMap(); }} />}
+    <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
+      {showQuiz && <QuizModal onComplete={completeQuiz} onClose={() => setShowQuiz(false)} />}
+      {showCard && result && <ShareCardModal score={result.score} lean={result.lean} onClose={() => setShowCard(false)} />}
+      {openRace && <RaceDetail race={openRace} cp={cp} onClose={() => setOpenRace(null)} />}
 
       {/* Nav */}
-      <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", position: "sticky", top: 0, zIndex: 100, padding: "0 clamp(1rem, 4vw, 2rem)", display: "flex", alignItems: "center", justifyContent: "space-between", height: 62 }}>
+      <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", position: "sticky", top: 0, zIndex: 100, padding: "0 clamp(1rem,4vw,2rem)", display: "flex", alignItems: "center", justifyContent: "space-between", height: 62 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ display: "flex", color: "var(--accent)" }}>{Icon.vote(20)}</span>
-          <span style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: 23, letterSpacing: "0", color: "var(--text-primary)", lineHeight: 1 }}>Voteview</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", background: "var(--bg-muted)", color: "var(--text-muted)", padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)" }}>Beta</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 23, color: "var(--text-primary)", lineHeight: 1 }}>Voteview</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", background: "var(--bg-muted)", color: "var(--text-muted)", padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)" }}>Senate &apos;26</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {revealed && (
-            <button onClick={() => setShowQuiz(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 16px", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", cursor: "pointer", transition: "all 0.18s ease" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--text-primary)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-secondary)"; }}>
-              {Icon.vote(14)} {quizAnswers ? "Retake quiz" : "Take quiz"}
-            </button>
-          )}
-          <button onClick={() => setDark(d => !d)} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "8px 12px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}>
-            {dark ? Icon.sun(15) : Icon.moon(15)}
-          </button>
+          <button onClick={() => setShowQuiz(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "7px 16px", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", cursor: "pointer" }}>{Icon.vote(14)} {result ? "Retake quiz" : "Find your lean"}</button>
+          <button onClick={() => setDark(d => !d)} aria-label={dark ? "Light mode" : "Dark mode"} style={{ display: "flex", alignItems: "center", background: "none", border: "1px solid var(--border)", borderRadius: 99, padding: "8px 12px", color: "var(--text-secondary)", cursor: "pointer" }}>{dark ? Icon.sun(15) : Icon.moon(15)}</button>
         </div>
       </nav>
 
       {/* Hero */}
-      <div style={{ background: "var(--bg)", padding: "clamp(3.5rem, 8vw, 6rem) 1.5rem 4.5rem", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 1 }}>
-        <div style={{
-          position: "absolute", top: "-18%", left: "50%", transform: "translateX(-50%)",
-          width: 820, maxWidth: "120%", height: 460,
-          background: "radial-gradient(closest-side, var(--grad-2), transparent 72%), radial-gradient(closest-side, var(--grad-1), transparent 70%)",
-          backgroundPosition: "30% 40%, 70% 60%",
-          backgroundRepeat: "no-repeat",
-          opacity: 0.16,
-          filter: "blur(46px)",
-          animation: "drift 14s ease-in-out infinite",
-          pointerEvents: "none",
-        }} />
-
-        <div style={{ position: "relative", maxWidth: 780, margin: "0 auto" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 9,
-            fontFamily: "var(--font-mono)", fontSize: 10.5, fontWeight: 500,
-            color: "var(--text-muted)", letterSpacing: "0.16em", textTransform: "uppercase",
-            background: "var(--bg-card)", padding: "7px 16px", borderRadius: 99, marginBottom: "2rem",
-            border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)",
-            animation: "bounceIn 0.6s ease-out",
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--grad-3)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--grad-3) 22%, transparent)" }} />
-            6 elections · {Object.keys(PARTIES).length} parties · 2026–27
-          </div>
-
-          <h1 style={{
-            fontFamily: "var(--font-display)", fontWeight: 400,
-            fontSize: "clamp(44px, 9vw, 76px)", letterSpacing: "-0.01em", lineHeight: 1.02,
-            color: "var(--text-primary)", marginBottom: "1.4rem",
-            animation: "floatUp 0.7s ease-out 0.1s both",
-          }}>
-            Compare the parties.<br />
-            <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Decide for yourself.</span>
-          </h1>
-
-          <p style={{ fontSize: "clamp(16px, 2.4vw, 18px)", color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 540, margin: "0 auto 1rem", animation: "floatUp 0.7s ease-out 0.2s both" }}>
-            Voteview reads official party platforms and lays their positions side by side — in plain language, no spin, no jargon.
-          </p>
-
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 2.75rem", letterSpacing: "0.02em", animation: "floatUp 0.7s ease-out 0.3s both" }}>
-            Take the quiz to find where you fit, then explore any election on the map.
-          </p>
-
-          {!revealed && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: "3.5rem", animation: "floatUp 0.7s ease-out 0.4s both" }}>
-              <button
-                onClick={() => setShowQuiz(true)}
-                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.06) rotate(-1deg)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "scale(1) rotate(0deg)"; }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 16,
-                  fontWeight: 700, fontSize: 15.5,
-                  background: "linear-gradient(120deg, var(--grad-1), var(--grad-2))",
-                  color: "#fff", border: "none", cursor: "pointer",
-                  boxShadow: "0 10px 30px rgba(232,93,117,0.3)",
-                  transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                }}
-              >
-                {Icon.vote(18)} Take the quiz
-              </button>
-              <button onClick={revealMap} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", fontSize: 13.5, color: "var(--text-muted)", cursor: "pointer", padding: "4px 8px" }}>
-                Skip and browse elections {Icon.arrowRight(13)}
-              </button>
-            </div>
-          )}
-
-          {/* Bento stats grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(132px, 1fr))", gap: 12, maxWidth: 640, margin: "0 auto 2.5rem", animation: "floatUp 0.7s ease-out 0.5s both" }}>
-            {[
-              { end: Object.keys(COUNTRIES).length, label: "Elections tracked", grad: "var(--grad-1)" },
-              { end: totalParties, label: "Parties analysed", grad: "var(--grad-2)" },
-              { end: totalPositions, label: "Positions extracted", grad: "var(--grad-3)" },
-              { end: 849000000, label: "Voting in 2026", duration: 1500, grad: "var(--grad-4)", compact: true },
-            ].map((s, i) => (
-              <div key={i}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px) scale(1.03)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-                style={{
-                  background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16,
-                  padding: "1.25rem 0.75rem", borderTop: `3px solid ${s.grad}`,
-                  transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)", cursor: "default",
-                }}>
-                <StatCounter end={s.end} label={s.label} duration={s.duration} compact={s.compact} />
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", animation: "floatUp 0.7s ease-out 0.6s both" }}>
-            {["AI-extracted from official sources", "Neutral & non-partisan", "Real-time election news"].map((f, i) => (
-              <span key={f} style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 7, background: "var(--bg-card)", padding: "6px 14px", borderRadius: 99, border: "1px solid var(--border)" }}>
-                <span style={{ color: [`var(--grad-1)`, `var(--grad-2)`, `var(--grad-3)`][i % 3], display: "flex" }}>{Icon.check(12)}</span> {f}
-              </span>
-            ))}
+      <div style={{ padding: "clamp(2.5rem,6vw,4.5rem) clamp(1rem,4vw,2rem) 2.5rem", maxWidth: 1080, margin: "0 auto", position: "relative" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 9, fontFamily: "var(--font-mono)", fontSize: 10.5, fontWeight: 500, color: "var(--text-muted)", letterSpacing: "0.14em", textTransform: "uppercase", background: "var(--bg-card)", padding: "7px 16px", borderRadius: 99, marginBottom: "1.6rem", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTY.R.color, boxShadow: `0 0 0 3px ${PARTY.R.color}33` }} />
+          {days} days to Election Day · Nov 3, 2026
+        </div>
+        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "clamp(38px,7vw,64px)", letterSpacing: "-0.01em", lineHeight: 1.04, color: "var(--text-primary)", marginBottom: "1.1rem", maxWidth: 820 }}>
+          The 2026 Senate runs through <span style={{ fontStyle: "italic", color: "var(--accent)" }}>ten races</span>.
+        </h1>
+        <p style={{ fontSize: "clamp(15px,2.2vw,18px)", color: "var(--text-secondary)", lineHeight: 1.65, maxWidth: 600, marginBottom: "2rem" }}>
+          Compare the candidates, find where you lean, and see exactly what&apos;s at stake for control of the Senate — battleground by battleground, in plain language.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 16, alignItems: "stretch" }}>
+          <SenateControl />
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.5rem 1.6rem", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
+            <p className="mono-label" style={{ margin: "0 0 8px" }}>Not sure where you fit?</p>
+            <p style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 16px" }}>Answer six quick questions to find your lean and see which candidate in each race is closest to you.</p>
+            <button onClick={() => setShowQuiz(true)} style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 9, padding: "12px 24px", borderRadius: 12, border: "none", background: "var(--accent)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>{Icon.vote(16)} Find your lean</button>
           </div>
         </div>
       </div>
 
-      {revealed && (
-        <div ref={mapRef} style={{ background: "var(--bg)", padding: "3.5rem 2rem", borderTop: "1px solid var(--border)" }}>
-          <div style={{ maxWidth: 1300, margin: "0 auto" }}>
-            <WorldMap onSelectCountry={handleSelectCountry} selectedCountry={country} />
-          </div>
-        </div>
-      )}
+      {/* Board */}
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 clamp(1rem,4vw,2rem) 3rem" }}>
+        <div id="result-anchor" />
+        {result && showResult && <ResultBanner score={result.score} lean={result.lean} onShare={() => setShowCard(true)} onRetake={() => setShowQuiz(true)} onDismiss={() => setShowResult(false)} />}
 
-      {loading && (
-        <div style={{ maxWidth: 1300, margin: "0 auto", padding: "3rem 2rem" }}>
-          <div className="skeleton" style={{ height: 24, width: 200, borderRadius: 8, marginBottom: 12 }} />
-          <div className="skeleton" style={{ height: 36, width: 280, borderRadius: 8, marginBottom: 28 }} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {[1,2,3,4].map(i => (
-              <div key={i} className="skeleton" style={{ height: 160, borderRadius: 16, border: "1px solid var(--border)" }} />
-            ))}
-          </div>
+        <div style={{ marginBottom: "2rem" }}>
+          <USMap cp={cp} onOpen={setOpenRace} />
         </div>
-      )}
 
-      <div ref={comparatorRef}>
-        {data && !loading && (
-          <ComparisonView data={data} country={country} year={year} matchResults={matchResults} quizAnswers={quizAnswers} />
-        )}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: "1.25rem" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "clamp(26px,4vw,34px)", color: "var(--text-primary)", margin: 0 }}>The battlegrounds</h2>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-muted)" }}>{RACES.length} races · click to compare</span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px,1fr))", gap: 14 }}>
+          {RACES.map(r => <RaceCard key={r.id} race={r} cp={cp} onOpen={setOpenRace} />)}
+        </div>
+
+        {/* Footer / methodology */}
+        <div style={{ marginTop: "2.5rem", padding: "1.5rem 1.6rem", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 22px", marginBottom: 14 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--text-muted)" }}><span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, color: "var(--grad-3)", background: "color-mix(in srgb, var(--grad-3) 12%, transparent)", padding: "3px 8px", borderRadius: 99, border: "1px solid color-mix(in srgb, var(--grad-3) 45%, transparent)", textTransform: "uppercase" }}>{Icon.shield(10)} Sourced</span> Paraphrases the candidate&apos;s stated record — tap for the source</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--text-muted)" }}><span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 600, color: "var(--text-muted)", background: "var(--bg-muted)", padding: "3px 8px", borderRadius: 99, border: "1px solid var(--border)", textTransform: "uppercase" }}>{Icon.cpu(10)} Unverified</span> Party-platform baseline — help us source it</span>
+          </div>
+          <p style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.65, margin: 0 }}>
+            <span style={{ flexShrink: 0, marginTop: 2 }}>{Icon.warn(13)}</span>
+            Races, candidates and ratings reflect public reporting as of {DATA_AS_OF}; Michigan&apos;s Democratic nominee is set at its August primary. &ldquo;Sourced&rdquo; rows paraphrase candidates&apos; stated records (with links); &ldquo;Unverified&rdquo; rows show general party-platform directions while we source that candidate. This tool is non-partisan and not affiliated with any campaign or party. Confirm with official sources before you vote.
+          </p>
+        </div>
       </div>
-
     </div>
   );
 }
