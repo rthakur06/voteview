@@ -869,10 +869,10 @@ export default function Home() {
           {days} days to Election Day · Nov 3, 2026
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "clamp(38px,7vw,64px)", letterSpacing: "-0.01em", lineHeight: 1.04, color: "var(--text-primary)", marginBottom: "1.1rem", maxWidth: 820 }}>
-          The 2026 Senate runs through <span className="ink-underline" style={{ fontStyle: "italic", color: "var(--accent)" }}>ten races</span>.
+          The whole Senate turns on <span className="ink-underline" style={{ fontStyle: "italic", color: "var(--accent)" }}>ten races</span>.
         </h1>
         <p style={{ fontSize: "clamp(15px,2.2vw,18px)", color: "var(--text-secondary)", lineHeight: 1.65, maxWidth: 600, marginBottom: "1.5rem" }}>
-          Compare the candidates, find where you lean, and see exactly what&apos;s at stake for control of the Senate — battleground by battleground, in plain language.
+          Who wins them decides what gets passed, blocked, and confirmed for years. Compare the candidates, find where you fit, and trace the path to a majority.
         </p>
         <div className="ornament" style={{ maxWidth: 600, marginBottom: "2rem" }}><span className="ornament-mark">❧</span></div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 16, alignItems: "stretch" }}>
