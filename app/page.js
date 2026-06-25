@@ -219,11 +219,11 @@ const Icon = {
 /* ---------- Helpers ---------- */
 function leanLabel(score) {
   if (score == null) return null;
-  if (score < -0.55) return "Strong Democratic lean";
-  if (score < -0.18) return "Democratic lean";
-  if (score <= 0.18) return "Split / independent-leaning";
-  if (score <= 0.55) return "Republican lean";
-  return "Strong Republican lean";
+  if (score < -0.55) return "Solidly Democratic";
+  if (score < -0.18) return "Leans Democratic";
+  if (score <= 0.18) return "Right in the middle";
+  if (score <= 0.55) return "Leans Republican";
+  return "Solidly Republican";
 }
 function closerParty(score) {
   if (score == null || Math.abs(score) <= 0.12) return null;
@@ -270,7 +270,7 @@ function SenateControl() {
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>Republicans <span style={{ width: 9, height: 9, borderRadius: 2, background: PARTY.R.color }} /></span>
       </div>
       <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "14px 0 0", paddingTop: 14, borderTop: "1px solid var(--border-light)" }}>
-        Republicans hold a <strong style={{ color: "var(--text-primary)" }}>{SENATE.R}–{dAligned}</strong> edge. To take the majority, Democrats must net <strong style={{ color: PARTY.D.color }}>{SENATE.demNeed} seats</strong> — a 50–50 tie is broken by the Republican vice president. The {RACES.length} races below are where that math gets decided.
+        Republicans hold <strong style={{ color: "var(--text-primary)" }}>{SENATE.R}</strong> seats to the Democrats&apos; <strong style={{ color: "var(--text-primary)" }}>{dAligned}</strong> (counting the two independents who vote with them). Democrats need to flip a net of <strong style={{ color: PARTY.D.color }}>{SENATE.demNeed} seats</strong> to reach 51 and take charge — anything short of that, and a 50–50 tie goes to Republicans, because the vice president breaks ties. These {RACES.length} races decide it.
       </p>
     </div>
   );
@@ -351,7 +351,7 @@ function UnverifiedBadge({ race, party, issue }) {
         <>
           <span onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
           <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 61, width: 250, background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, boxShadow: "var(--shadow-md)", padding: "12px 13px" }}>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 10px", lineHeight: 1.5 }}>This shows the <strong>general party-platform direction</strong>, not this candidate&apos;s verified record. We&apos;re sourcing candidate-specific positions.</p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 10px", lineHeight: 1.5 }}>We haven&apos;t confirmed this candidate&apos;s own words yet, so we&apos;re showing what the party generally stands for as a placeholder. Know their actual position? Add a source.</p>
             <button onClick={() => setCorrecting(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "var(--accent-ink)", background: "none", border: "none", padding: 0, cursor: "pointer" }}>{Icon.edit(11)} Add a sourced position</button>
           </div>
         </>
@@ -594,7 +594,7 @@ function RaceCard({ race, cp, onOpen, index = 0 }) {
         })}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--border-light)", paddingTop: 9 }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-faint)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{race.type}{race.open ? " · Open seat" : ""} · held by {race.heldBy}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-faint)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{race.open ? "Open seat" : race.type === "Special" ? "Special election" : "Re-election"} · {race.open ? "last held by" : "held by"} {PARTY[race.heldBy].name}s</span>
         <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: hover ? "var(--accent)" : "var(--text-muted)" }}>Compare {Icon.arrow(12)}</span>
       </div>
     </button>
@@ -660,7 +660,7 @@ function RaceDetail({ race, cp, onClose }) {
           <p className="mono-label" style={{ margin: "0 0 4px" }}>Where they stand</p>
           <div style={{ display: "flex", gap: 11, padding: "10px 13px", borderRadius: 10, background: "var(--bg-muted)", border: "1px solid var(--border)", marginBottom: 14 }}>
             <span style={{ flexShrink: 0, color: "var(--text-muted)", marginTop: 1 }}>{Icon.warn(13)}</span>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.55 }}><strong>Sourced</strong> rows paraphrase the candidate&apos;s own stated record (tap to read the source). <strong>Unverified</strong> rows show the general party-platform direction while we source that candidate&apos;s record — tap to add a citation.</p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.55 }}>Rows marked <strong>with a source</strong> are the candidate&apos;s own stated position (tap the tag to read it). Rows marked <strong>Unverified</strong> show what the party generally stands for, as a placeholder until we confirm that candidate&apos;s record — tap to help us source it.</p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -718,7 +718,7 @@ function ResultBanner({ score, lean, onShare, onRetake, onDismiss }) {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--text-muted)", marginBottom: 16 }}><span>DEMOCRATIC</span><span>REPUBLICAN</span></div>
         <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 16px" }}>
-          {cp ? <>In the battleground races below, the <strong style={{ color: PARTY[cp].color }}>{PARTY[cp].name}</strong> candidate is generally closer to your answers — we&apos;ve marked them. Open any race to compare the details.</> : <>Your answers land near the centre — no clear party lean. Open any race to weigh the candidates yourself.</>}
+          {cp ? <>Across these races, the <strong style={{ color: PARTY[cp].color }}>{PARTY[cp].name}</strong> candidate usually lines up better with your answers — we&apos;ve tagged them &ldquo;closer to you&rdquo; on each race. Open any race to see the details and decide for yourself.</> : <>Your answers sit close to the middle, so neither party is a clear fit. Open any race to weigh the two candidates yourself.</>}
         </p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button onClick={onShare} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 11, border: "none", background: "var(--accent)", color: "#fff", fontSize: 13.5, fontWeight: 700 }}>{Icon.share(14)} Share my lean</button>
@@ -869,11 +869,12 @@ export default function Home() {
           {days} days to Election Day · Nov 3, 2026
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "clamp(38px,7vw,64px)", letterSpacing: "-0.01em", lineHeight: 1.04, color: "var(--text-primary)", marginBottom: "1.1rem", maxWidth: 820 }}>
-          The 2026 Senate runs through <span style={{ fontStyle: "italic", color: "var(--accent)" }}>ten races</span>.
+          The 2026 Senate runs through <span className="ink-underline" style={{ fontStyle: "italic", color: "var(--accent)" }}>ten races</span>.
         </h1>
-        <p style={{ fontSize: "clamp(15px,2.2vw,18px)", color: "var(--text-secondary)", lineHeight: 1.65, maxWidth: 600, marginBottom: "2rem" }}>
+        <p style={{ fontSize: "clamp(15px,2.2vw,18px)", color: "var(--text-secondary)", lineHeight: 1.65, maxWidth: 600, marginBottom: "1.5rem" }}>
           Compare the candidates, find where you lean, and see exactly what&apos;s at stake for control of the Senate — battleground by battleground, in plain language.
         </p>
+        <div className="ornament" style={{ maxWidth: 600, marginBottom: "2rem" }}><span className="ornament-mark">❧</span></div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 16, alignItems: "stretch" }}>
           <SenateControl />
           <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.5rem 1.6rem", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
@@ -914,7 +915,7 @@ export default function Home() {
           </div>
           <p style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.65, margin: 0 }}>
             <span style={{ flexShrink: 0, marginTop: 2 }}>{Icon.warn(13)}</span>
-            Races, candidates and ratings reflect public reporting as of {DATA_AS_OF}; Michigan&apos;s Democratic nominee is set at its August primary. &ldquo;Sourced&rdquo; rows paraphrase candidates&apos; stated records (with links); &ldquo;Unverified&rdquo; rows show general party-platform directions while we source that candidate. This tool is non-partisan and not affiliated with any campaign or party. Confirm with official sources before you vote.
+            Races, candidates and ratings reflect public reporting as of {DATA_AS_OF}; Michigan&apos;s Democratic candidate is decided at its August primary. Where a row has a source tag, it&apos;s that candidate&apos;s own stated position; where it says &ldquo;Unverified,&rdquo; we&apos;re showing the party&apos;s general stance as a placeholder until we confirm theirs. This tool is non-partisan and isn&apos;t tied to any campaign or party. Always double-check with official sources before you vote.
           </p>
         </div>
       </div>
